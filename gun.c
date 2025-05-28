@@ -10,23 +10,26 @@
 #define MAX_AMMO 4
 
 struct projectile{
-    int key;
+    int order;
     float x;
     float y;
     int og_dimensions;
     int dimensions;
     int speed_x;
     int speed_y;
+};
 
+struct casing{
+    struct projectile info;
 
-    struct projectile *clock;
+    struct casing *clock;
 };
 
 struct ammo{
     int ammo_amt;
     ALLEGRO_BITMAP *projectile;
 
-    struct projectile *magazine;
+    struct casing *magazine;
 };
 
 struct ammo* create_ammo(char *file_name){
@@ -57,4 +60,8 @@ struct projectile* create_projectile(struct ammo *ammo){
     new->x = 0;
 
     return new;
+}
+
+struct projectile* clock_projectile(){
+    struct projectile *shoot;
 }
