@@ -23,6 +23,23 @@ void move_player( struct player *player, int direction){
     }
 }
 
+void initialize_player_info(struct environment world, struct player *player){
+    player->x = 200;
+    player->y = world.floor;
+    player->og_dimensions = 64;
+    player->dimensions = 100;
+    player->speed = 20;
+    player->direction = RIGHT;
+    player->aim = RIGHT;
+    player->frame_jump = 0;
+    player->jump_enable = true; //jump enabled
+    player->sprite_off_x = 0;
+    player->sprite_off_y = 64;
+    player->shadow_height = 7;
+    player->shadow_width = 21;
+    player->shadow_mod = 0;
+}
+
 
 void jump_player(struct player* player){
     player->jump_enable = false;

@@ -9,6 +9,19 @@
 #define RIGHT     1
 #define LEFT     2
 
+struct projectile{
+    float x;
+    float y;
+    int og_dimensions;
+    int dimensions;
+    int distance_from_og;
+    int speed_x;
+    int speed_y;
+    bool shoot;
+
+    ALLEGRO_BITMAP *projectile;
+};
+
 struct player{
     float x;
     float y;
@@ -20,6 +33,8 @@ struct player{
     int direction;
     int jump_enable;
     float frame_jump;
+
+    int aim;
 
     int shadow_x;
     int shadow_y;
@@ -51,6 +66,7 @@ struct environment{
     ALLEGRO_BITMAP *bkg;
 };
 
+void initialize_player_info(struct environment world, struct player *player);
 
 void set_player_methods(struct player *player);
 

@@ -8,6 +8,9 @@
 
 #define RIGHT     1
 #define LEFT     2
+#define UP    3
+#define RUP    4
+#define LUP    5
 
 void must_init(bool test, const char *description)
 {
@@ -22,9 +25,11 @@ void must_init(bool test, const char *description)
 int main(){
     struct player player;
     struct environment world;
+    struct projectile proj;
 
     must_init(al_init(), "allegro");
     must_init(al_install_keyboard(), "keyboard");
+    must_init(al_install_mouse(), "mouse");
 
     ALLEGRO_TIMER* timer = al_create_timer(1.0 / 30.0);
     must_init(timer, "timer");
@@ -59,22 +64,22 @@ int main(){
 
     //setting player rules
     set_player_methods(&player);
-    player.x = 200;
-    player.y = world.floor;
-    player.og_dimensions = 64;
-    player.dimensions = 100;
-    player.speed = 20;
-    player.direction = RIGHT;
-    player.frame_jump = 0;
-    player.jump_enable = true; //jump enabled
-    player.sprite_off_x = 0;
-    player.sprite_off_y = 64;
-    player.shadow_height = 7;
-    player.shadow_width = 21;
-    player.shadow_mod = 0;
+    initialize_player_info(world, &player);
     player.sprite = al_load_bitmap("assets/kyara.png");
-    must_init(player.sprite, "kyara");
+    must_init(player.sprite, "character");
     al_convert_mask_to_alpha(player.sprite, al_map_rgb(26, 255, 0));
+
+    //projectile rules
+    proj.og_dimensions = 32;
+    proj.dimensions = 35;
+    proj.x = 0;
+    proj.y = player.y + player.og_dimensions/2;
+    proj.speed_x = 40;
+    proj.speed_y = 0;
+    proj.shoot = false;
+    proj.projectile = al_load_bitmap("assets/projectile.png");
+    must_init(proj.projectile, "projectile");
+    al_convert_mask_to_alpha(proj.projectile, al_map_rgb(26, 255, 0));
 
     must_init(al_init_primitives_addon(), "primitives");
     al_register_event_source(queue, al_get_keyboard_event_source());
@@ -85,10 +90,18 @@ int main(){
     bool redraw = true;
     ALLEGRO_EVENT event;
     ALLEGRO_KEYBOARD_STATE ks;
+    ALLEGRO_MOUSE_STATE ms;
 
     al_start_timer(timer);
     while(1)
     {   
+        if(proj.x >= world.screen_width || proj.x <= 0 || proj.y <= 0 || proj.y >= world.screen_height){
+            proj.shoot = false;
+            proj.x = player.x;
+        }
+
+        proj.x += proj.speed_x;
+        proj.y += proj.speed_y;
         player.sprite_off_x = 0;
         if(player.direction == RIGHT){
             player.sprite_off_y = 64;
@@ -103,6 +116,7 @@ int main(){
         
             case ALLEGRO_EVENT_TIMER:
                 al_get_keyboard_state(&ks);
+                al_get_mouse_state(&ms);
 
                 if(player.x >= player.speed && (al_key_down(&ks, ALLEGRO_KEY_LEFT) || al_key_down(&ks, ALLEGRO_KEY_A))){
 
@@ -122,6 +136,9 @@ int main(){
                         player.sprite_off_x = 128;
                     }
                     player.direction = LEFT;
+                    if(!proj.shoot){
+                        player.aim = LEFT;
+                    }
                 }
 
                 if(player.x <= (world.screen_width - player.speed - player.dimensions) && (al_key_down(&ks, ALLEGRO_KEY_RIGHT) || al_key_down(&ks, ALLEGRO_KEY_D))){
@@ -142,10 +159,35 @@ int main(){
                         player.sprite_off_x = 128;
                     }
                     player.direction = RIGHT;
+                    if(!proj.shoot){
+                        player.aim = RIGHT;
+                    }
+                    
                 }
 
-                if((al_key_down(&ks, ALLEGRO_KEY_SPACE) || al_key_down(&ks, ALLEGRO_KEY_W)) && player.jump_enable){
+                if((al_key_down(&ks, ALLEGRO_KEY_SPACE)) && player.jump_enable){
                     player.jump(&player);
+                }
+
+                if(al_key_down(&ks, ALLEGRO_KEY_W) && !proj.shoot){
+                    player.aim = UP;
+                }
+                if(al_key_down(&ks, ALLEGRO_KEY_W) && al_key_down(&ks, ALLEGRO_KEY_D) && !proj.shoot){
+                    player.aim = RUP;
+                }
+                if(al_key_down(&ks, ALLEGRO_KEY_W) && al_key_down(&ks, ALLEGRO_KEY_A) && !proj.shoot){
+                    player.aim = LUP;
+                }
+
+                if(al_mouse_button_down(&ms, 1)){
+                    if(!proj.shoot){
+                        proj.x = player.x+35;
+                    }
+
+            
+                    proj.y = player.y + player.og_dimensions/2;
+                    proj.shoot = true;
+                    
                 }
 
                 if(al_key_down(&ks, ALLEGRO_KEY_ESCAPE))
@@ -174,6 +216,35 @@ int main(){
                     }
 
                 }
+
+                switch (player.aim)
+                {
+                case RIGHT:
+                    proj.speed_x = 40;
+                    proj.speed_y = 0;
+                    
+                    break;
+                case LEFT:
+                    proj.speed_x = -40;
+                    proj.speed_y = 0;
+                    break;
+                case UP:
+                    proj.speed_x = 0;
+                    proj.speed_y = -40;
+                    break;
+                case RUP:
+                    proj.speed_x = 25;
+                    proj.speed_y = -25;
+                    break;
+                case LUP:
+                    proj.speed_x = -25;
+                    proj.speed_y = -25;
+                    break;
+                
+                default:
+                    break;
+                }
+                
  
    
 
@@ -208,6 +279,12 @@ int main(){
             
             //player shadow
             al_draw_filled_ellipse(player.shadow_x, player.shadow_y, player.shadow_width, player.shadow_height, al_map_rgba_f(0, 0, 0, 0.5));
+
+            //projectile
+            if(proj.shoot){
+                al_draw_scaled_bitmap(proj.projectile, 0, 0, proj.og_dimensions, proj.og_dimensions, proj.x, proj.y, proj.dimensions, proj.dimensions, 0);
+
+            }
             
             //player
             al_draw_scaled_bitmap(player.sprite, player.sprite_off_x, player.sprite_off_y, player.og_dimensions, player.og_dimensions, player.x, player.y, player.dimensions, player.dimensions, 0);
