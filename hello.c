@@ -51,7 +51,7 @@ int main(){
     world.bkg_img_og_height = 256;
     world.bkg_img_og_width = 2048;
     world.air_round = 0;
-    world.bkg = al_load_bitmap("bkg.png");
+    world.bkg = al_load_bitmap("assets/bkg.png");
     must_init(world.bkg, "bkg");
 
     ALLEGRO_DISPLAY* disp = al_create_display(world.screen_width, world.screen_height);
@@ -72,7 +72,7 @@ int main(){
     player.shadow_height = 7;
     player.shadow_width = 21;
     player.shadow_mod = 0;
-    player.sprite = al_load_bitmap("kyara.png");
+    player.sprite = al_load_bitmap("assets/kyara.png");
     must_init(player.sprite, "kyara");
     al_convert_mask_to_alpha(player.sprite, al_map_rgb(26, 255, 0));
 
