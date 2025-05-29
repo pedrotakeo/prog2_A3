@@ -5,12 +5,7 @@
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_primitives.h>
 #include "player.h"
-
-#define RIGHT     1
-#define LEFT     2
-#define UP    3
-#define RUP    4
-#define LUP    5
+#include "weapon.h"
 
 void must_init(bool test, const char *description)
 {
@@ -23,10 +18,6 @@ void must_init(bool test, const char *description)
 
 
 int main(){
-    struct player player;
-    struct environment world;
-    struct projectile proj;
-
     must_init(al_init(), "allegro");
     must_init(al_install_keyboard(), "keyboard");
     must_init(al_install_mouse(), "mouse");
@@ -46,7 +37,8 @@ int main(){
     must_init(al_init_image_addon(), "image addon");
 
     //setting world rules
-    world.shadow = 7;
+    struct environment world;
+    world.shadow = 7;    
     world.gravity = 40;
     world.screen_width = 1280;
     world.screen_height = 720;
@@ -63,6 +55,7 @@ int main(){
     must_init(disp, "display");
 
     //setting player rules
+    struct player player;
     set_player_methods(&player);
     initialize_player_info(world, &player);
     player.sprite = al_load_bitmap("assets/kyara.png");
@@ -70,16 +63,12 @@ int main(){
     al_convert_mask_to_alpha(player.sprite, al_map_rgb(26, 255, 0));
 
     //projectile rules
-    proj.og_dimensions = 32;
-    proj.dimensions = 35;
-    proj.x = 0;
-    proj.y = player.y + player.og_dimensions/2;
-    proj.speed_x = 40;
-    proj.speed_y = 0;
-    proj.shoot = false;
-    proj.projectile = al_load_bitmap("assets/projectile.png");
-    must_init(proj.projectile, "projectile");
-    al_convert_mask_to_alpha(proj.projectile, al_map_rgb(26, 255, 0));
+    struct weapon *weapon;
+    weapon = create_weapon();
+    must_init(weapon, "weapon");
+    weapon->projectile = al_load_bitmap("assets/projectile.png");
+    must_init(weapon->projectile, "projectile");
+    al_convert_mask_to_alpha(weapon->projectile, al_map_rgb(26, 255, 0));
 
     must_init(al_init_primitives_addon(), "primitives");
     al_register_event_source(queue, al_get_keyboard_event_source());
@@ -95,13 +84,7 @@ int main(){
     al_start_timer(timer);
     while(1)
     {   
-        if(proj.x >= world.screen_width || proj.x <= 0 || proj.y <= 0 || proj.y >= world.screen_height){
-            proj.shoot = false;
-            proj.x = player.x;
-        }
-
-        proj.x += proj.speed_x;
-        proj.y += proj.speed_y;
+        
         player.sprite_off_x = 0;
         if(player.direction == RIGHT){
             player.sprite_off_y = 64;
@@ -118,6 +101,11 @@ int main(){
                 al_get_keyboard_state(&ks);
                 al_get_mouse_state(&ms);
 
+                //KILLS GAME ON "ESC"====================================================================================
+                if(al_key_down(&ks, ALLEGRO_KEY_ESCAPE))
+                    done = true;
+
+                //PLAYER MOVES LEFT====================================================================================
                 if(player.x >= player.speed && (al_key_down(&ks, ALLEGRO_KEY_LEFT) || al_key_down(&ks, ALLEGRO_KEY_A))){
 
                     if(player.x > 100 || world.bkg_off_x == 0){
@@ -136,11 +124,10 @@ int main(){
                         player.sprite_off_x = 128;
                     }
                     player.direction = LEFT;
-                    if(!proj.shoot){
-                        player.aim = LEFT;
-                    }
+                    player.aim = LEFT;
                 }
 
+                //PLAYER MOVES RIGHT====================================================================================
                 if(player.x <= (world.screen_width - player.speed - player.dimensions) && (al_key_down(&ks, ALLEGRO_KEY_RIGHT) || al_key_down(&ks, ALLEGRO_KEY_D))){
 
                     if(player.x < (world.screen_width - 200) || world.bkg_off_x == (2048 - 456)){
@@ -159,40 +146,27 @@ int main(){
                         player.sprite_off_x = 128;
                     }
                     player.direction = RIGHT;
-                    if(!proj.shoot){
-                        player.aim = RIGHT;
-                    }
+                    player.aim = RIGHT;
                     
+
                 }
 
+                //AIM ADJUSTMENT====================================================================================
+                if(al_key_down(&ks, ALLEGRO_KEY_W)){
+                    player.aim = UP;
+                }
+                if(al_key_down(&ks, ALLEGRO_KEY_W) && al_key_down(&ks, ALLEGRO_KEY_D)){
+                    player.aim = RUP;
+                }
+                if(al_key_down(&ks, ALLEGRO_KEY_W) && al_key_down(&ks, ALLEGRO_KEY_A)){
+                    player.aim = LUP;
+                }
+
+                //PLAYER JUMPS====================================================================================
                 if((al_key_down(&ks, ALLEGRO_KEY_SPACE)) && player.jump_enable){
                     player.jump(&player);
                 }
 
-                if(al_key_down(&ks, ALLEGRO_KEY_W) && !proj.shoot){
-                    player.aim = UP;
-                }
-                if(al_key_down(&ks, ALLEGRO_KEY_W) && al_key_down(&ks, ALLEGRO_KEY_D) && !proj.shoot){
-                    player.aim = RUP;
-                }
-                if(al_key_down(&ks, ALLEGRO_KEY_W) && al_key_down(&ks, ALLEGRO_KEY_A) && !proj.shoot){
-                    player.aim = LUP;
-                }
-
-                if(al_mouse_button_down(&ms, 1)){
-                    if(!proj.shoot){
-                        proj.x = player.x+35;
-                    }
-
-            
-                    proj.y = player.y + player.og_dimensions/2;
-                    proj.shoot = true;
-                    
-                }
-
-                if(al_key_down(&ks, ALLEGRO_KEY_ESCAPE))
-                    done = true;
-        
                 player.y -= player.frame_jump;
                 
                 if(player.y >= world.floor){
@@ -217,42 +191,21 @@ int main(){
 
                 }
 
-                switch (player.aim)
-                {
-                case RIGHT:
-                    proj.speed_x = 40;
-                    proj.speed_y = 0;
-                    
-                    break;
-                case LEFT:
-                    proj.speed_x = -40;
-                    proj.speed_y = 0;
-                    break;
-                case UP:
-                    proj.speed_x = 0;
-                    proj.speed_y = -40;
-                    break;
-                case RUP:
-                    proj.speed_x = 25;
-                    proj.speed_y = -25;
-                    break;
-                case LUP:
-                    proj.speed_x = -25;
-                    proj.speed_y = -25;
-                    break;
-                
-                default:
-                    break;
+                //SHOOTER LOGIC====================================================================================
+                update_bullet_trajectories(weapon, world);
+                if(al_mouse_button_down(&ms, 1)){
+                    load_weapon(weapon, player); 
                 }
-                
- 
-   
 
+
+                //PLAYER SHADOW INFO====================================================================================
                 player.shadow_x = player.x + (player.dimensions/2);
                 player.shadow_y = world.floor + 93;
                 player.shadow_height = world.shadow + player.shadow_mod;
                 player.shadow_width = (player.shadow_height * 3);
-                redraw = true;
+
+            
+                redraw = true;  // set to be redrawn
                 break;
 
             case ALLEGRO_EVENT_DISPLAY_CLOSE:
@@ -263,7 +216,7 @@ int main(){
         if(done)
             break;
 
-        if(redraw && al_is_event_queue_empty(queue))
+        if(redraw && al_is_event_queue_empty(queue))  // DESENHA A FRAME
         {
             if(player.direction == RIGHT){
                 player.sprite_off_y = 64;
@@ -281,10 +234,7 @@ int main(){
             al_draw_filled_ellipse(player.shadow_x, player.shadow_y, player.shadow_width, player.shadow_height, al_map_rgba_f(0, 0, 0, 0.5));
 
             //projectile
-            if(proj.shoot){
-                al_draw_scaled_bitmap(proj.projectile, 0, 0, proj.og_dimensions, proj.og_dimensions, proj.x, proj.y, proj.dimensions, proj.dimensions, 0);
-
-            }
+            draw_bullet(weapon);
             
             //player
             al_draw_scaled_bitmap(player.sprite, player.sprite_off_x, player.sprite_off_y, player.og_dimensions, player.og_dimensions, player.x, player.y, player.dimensions, player.dimensions, 0);
@@ -299,6 +249,7 @@ int main(){
 
     }
 
+    weapon = destroy_weapon(weapon);
     al_destroy_bitmap(world.bkg);
     al_destroy_bitmap(player.sprite);
     al_destroy_font(font);

@@ -8,19 +8,10 @@
 
 #define RIGHT     1
 #define LEFT     2
+#define UP    3
+#define RUP    4
+#define LUP    5
 
-struct projectile{
-    float x;
-    float y;
-    int og_dimensions;
-    int dimensions;
-    int distance_from_og;
-    int speed_x;
-    int speed_y;
-    bool shoot;
-
-    ALLEGRO_BITMAP *projectile;
-};
 
 struct player{
     float x;
