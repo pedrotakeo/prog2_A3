@@ -13,21 +13,22 @@ struct projectile{
     int order;
     float x;
     float y;
-    int og_dimensions;
-    int dimensions;
     int speed_x;
     int speed_y;
 };
 
 struct casing{
     struct projectile info;
-
+    
     struct casing *clock;
 };
 
 struct ammo{
     int ammo_amt;
+
     ALLEGRO_BITMAP *projectile;
+    int og_dimensions;
+    int dimensions;
 
     struct casing *magazine;
 };
@@ -38,6 +39,8 @@ struct ammo* create_ammo(char *file_name){
         return NULL;
     }
     new->ammo_amt = 0;
+    new->dimensions = 35;
+    new->og_dimensions = 32;
     
     
     new->magazine = NULL;
@@ -45,23 +48,22 @@ struct ammo* create_ammo(char *file_name){
     return new;
 }
 
-struct projectile* create_projectile(struct ammo *ammo){
-    struct projectile *new;
+struct casing* create_projectile(struct ammo *ammo){
+    struct casing *new;
     if(!(new = malloc (sizeof(struct projectile)))){
         return NULL;
     }
 
-    new->key = ammo->ammo_amt+1;
-    new->dimensions = 35;
-    new->og_dimensions = 32;
-    new->speed_x = 0;
-    new->speed_y = 0;
-    new->x = 0;
-    new->x = 0;
+    new->info.order = ammo->ammo_amt+1;
+    new->info.speed_x = 0;
+    new->info.speed_y = 0;
+    new->info.x = 0;
+    new->info.y = 0;
 
     return new;
 }
 
-struct projectile* clock_projectile(){
-    struct projectile *shoot;
+struct projectile* clock_projectile(struct ammo *ammo, struct player player){
+    struct casing *shoot = ammo->magazine;
+
 }
