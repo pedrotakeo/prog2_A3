@@ -37,8 +37,7 @@ int main(){
     must_init(al_init_image_addon(), "image addon");
 
     //setting world rules
-    struct environment world;
-    world.shadow = 7;    
+    struct environment world; 
     world.gravity = 40;
     world.screen_width = 1280;
     world.screen_height = 720;
@@ -194,10 +193,6 @@ int main(){
                     
                 }
 
-                if (player.y <= world.floor){
-                    player.shadow_mod = (player.y - world.floor) / 100;
-                }
-
                 if (player.y <= world.floor - (8 * player.frame_jump)){
                     world.air_round++;
                     if(al_key_down(&ks, ALLEGRO_KEY_SPACE) && world.air_round < 30){
@@ -260,13 +255,6 @@ int main(){
                     
                 }
 
-
-                //PLAYER SHADOW INFO====================================================================================
-                player.shadow_x = player.x + (player.dimensions/2);
-                player.shadow_y = world.floor + 93;
-                player.shadow_height = world.shadow + player.shadow_mod;
-                player.shadow_width = (player.shadow_height * 3);
-
             
                 redraw = true;  // set to be redrawn
                 break;
@@ -293,8 +281,6 @@ int main(){
             //bkg
             al_draw_scaled_bitmap(world.bkg, world.bkg_off_x, 0, ((world.bkg_img_og_height * world.screen_width)/world.screen_height), world.bkg_img_og_height, 0, 0, world.screen_width, world.screen_height, 0);
             
-            //player shadow
-            al_draw_filled_ellipse(player.shadow_x, player.shadow_y, player.shadow_width, player.shadow_height, al_map_rgba_f(0, 0, 0, 0.5));
 
             //STAMINA BAR
             al_draw_filled_rectangle(20, 60, (5 * MAX_STAMINA) + 20, 70, al_map_rgb(255, 0, 0));
@@ -312,10 +298,16 @@ int main(){
 
             //projectile
             draw_bullet(weapon);
+
+            //PARAMETERS FOR PLATFORM
+            if(00 - world.bkg_off_x >=0 && 800 - world.bkg_off_x <=world.screen_width){
+                al_draw_line(1000 - world.bkg_off_x, 0, 1000 - world.bkg_off_x, world.screen_height, al_map_rgb(66, 32, 34), 2);
+            }
+        
+           
             
             //player
-            al_draw_scaled_bitmap(player.sprite, player.sprite_off_x, player.sprite_off_y, player.og_dimensions, player.og_dimensions, player.x, player.y, player.dimensions, player.dimensions, 0);
-            
+            al_draw_tinted_scaled_bitmap(player.sprite, al_map_rgb(255, 255, 255), player.sprite_off_x, player.sprite_off_y, player.og_dimensions, player.og_dimensions, player.x, player.y, player.dimensions, player.dimensions, 0);
             
             al_draw_text(font, al_map_rgb(35, 66, 32), 20, 50, 0, "STAMINA LEVEL");
             al_draw_text(font, al_map_rgb(66, 32, 34), 20, 5, 0, "LIFE FORCE");

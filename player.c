@@ -35,9 +35,6 @@ void initialize_player_info(struct environment world, struct player *player){
     player->jump_enable = true; //jump enabled
     player->sprite_off_x = 0;
     player->sprite_off_y = 64;
-    player->shadow_height = 7;
-    player->shadow_width = 21;
-    player->shadow_mod = 0;
     player->stamina = MAX_STAMINA;
     player->stamina_recount = MAX_STAMINA;
 

@@ -33,11 +33,6 @@ struct player{
 
     bool life[MAX_LIFE];
 
-    int shadow_x;
-    int shadow_y;
-    int shadow_height;
-    int shadow_width;
-    int shadow_mod;
 
     ALLEGRO_BITMAP *sprite;
     ALLEGRO_BITMAP *heart;
@@ -48,7 +43,6 @@ struct player{
 };
 
 struct environment{
-    int shadow;
     int screen_width;
     int screen_height;
     float floor;
