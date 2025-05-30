@@ -21,6 +21,7 @@ struct player{
     float universal_x;
     int og_dimensions;
     int dimensions;
+    int collision_height;
     int sprite_off_x;
     int sprite_off_y;
     int speed;
@@ -67,6 +68,8 @@ struct environment{
 void determine_universal_screen_limits(struct environment *world);
 
 void determine_universal_player_pos(struct environment world, struct player *player);
+
+void initialize_world_info(struct environment *world);
 
 void initialize_player_info(struct environment world, struct player *player);
 

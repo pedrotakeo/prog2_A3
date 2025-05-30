@@ -31,8 +31,8 @@ struct bullet* create_projectile(struct weapon *weapon, struct player player){
     }
 
     new->info.order = weapon->ammo_amt+1;
-    new->info.speed_x = 20;
-    new->info.speed_y = 20;
+    new->info.speed_x = 0;
+    new->info.speed_y = 0;
     new->info.x = player.x;
     new->info.y = player.y;
     new->next = NULL;

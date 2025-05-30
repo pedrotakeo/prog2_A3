@@ -29,6 +29,7 @@ void initialize_player_info(struct environment world, struct player *player){
     player->universal_x = 200;
     player->og_dimensions = 64;
     player->dimensions = 100;
+    player->collision_height = player->dimensions;
     player->speed = 20;
     player->direction = RIGHT;
     player->aim = RIGHT;
@@ -47,6 +48,19 @@ void initialize_player_info(struct environment world, struct player *player){
         player->life[i] = true;
     }
 }
+
+void initialize_world_info(struct environment *world){
+    world->gravity = 40;
+    world->screen_width = 1280;
+    world->screen_height = 720;
+    world->floor = world->screen_height - 175;
+    world->counter = 0;
+    world->bkg_off_x = 0;
+    world->bkg_img_og_height = 256;
+    world->bkg_img_og_width = 2048;
+    world->air_round = 0;
+}
+
 
 
 void jump_player(struct player* player){
