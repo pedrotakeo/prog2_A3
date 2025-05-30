@@ -11,6 +11,8 @@
 #define UP    3
 #define RUP    4
 #define LUP    5
+#define MAX_STAMINA 50
+#define MAX_LIFE 10
 
 
 struct player{
@@ -26,6 +28,10 @@ struct player{
     float frame_jump;
 
     int aim;
+    int stamina;
+    int stamina_recount;
+
+    bool life[MAX_LIFE];
 
     int shadow_x;
     int shadow_y;
@@ -34,6 +40,7 @@ struct player{
     int shadow_mod;
 
     ALLEGRO_BITMAP *sprite;
+    ALLEGRO_BITMAP *heart;
 
     void (*move)(struct player*, int);
 

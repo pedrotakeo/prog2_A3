@@ -61,6 +61,24 @@ int main(){
     player.sprite = al_load_bitmap("assets/kyara.png");
     must_init(player.sprite, "character");
     al_convert_mask_to_alpha(player.sprite, al_map_rgb(26, 255, 0));
+    player.heart = al_load_bitmap("assets/life.png");
+    must_init(player.heart, "heart");
+    al_convert_mask_to_alpha(player.heart, al_map_rgb(26, 255, 0));
+
+    //projectile BACKUP;
+    struct weapon *backup;
+    backup = create_weapon();
+    must_init(backup, "weapon");
+    backup->projectile = al_load_bitmap("assets/projectile.png");
+    must_init(backup->projectile, "projectile");
+    al_convert_mask_to_alpha(backup->projectile, al_map_rgb(26, 255, 0));
+
+    for (int i = 0; i < 30; i++){
+        struct bullet* aux = create_projectile(backup, player);
+        load_weapon(backup, aux, player);
+    }
+    
+
 
     //projectile rules
     struct weapon *weapon;
@@ -192,9 +210,54 @@ int main(){
                 }
 
                 //SHOOTER LOGIC====================================================================================
-                update_bullet_trajectories(weapon, world);
-                if(al_mouse_button_down(&ms, 1)){
-                    load_weapon(weapon, player); 
+                struct bullet* aux = weapon->first;
+                struct bullet* temp;
+
+                if(weapon->cool_down > 0){
+                    weapon->cool_down++;
+                }
+            
+                if(weapon->cool_down >= 4){
+                    weapon->cool_down = 0;
+                }
+            
+            
+                while(aux){
+                    temp = aux->next;
+                    aux->info.x += aux->info.speed_x;
+                    aux->info.y += aux->info.speed_y;
+                    aux->info.timer++;
+                    if(aux->info.timer >= 20){// se está dentro da tela
+                        aux = destroy_bullet(weapon, aux);
+                        free(aux);
+                    }
+            
+                    aux = temp;
+                }
+
+                if(player.stamina <= 0){
+                    if(player.stamina < 0){
+                        player.stamina_recount = 0;
+                    }
+                    player.stamina_recount++;
+                    if(player.stamina_recount >= MAX_STAMINA){
+                        player.stamina_recount = MAX_STAMINA;
+                        player.stamina = MAX_STAMINA;
+                    }
+                }
+
+                if(al_mouse_button_down(&ms, 1) && weapon->cool_down == 0 && player.stamina > 0){
+                    player.stamina--;
+                    player.stamina_recount--;
+                    if(backup->first){
+                        weapon->cool_down++;
+                        struct bullet* temp = destroy_bullet(backup, backup->first); // pega bala alocada da lista backup
+                        load_weapon(weapon, temp, player);  //carrega na arma principal
+    
+                        struct bullet* aux = create_projectile(backup, player); 
+                        load_weapon(backup, aux, player);  // faz refill na backup
+                    }
+                    
                 }
 
 
@@ -233,12 +296,30 @@ int main(){
             //player shadow
             al_draw_filled_ellipse(player.shadow_x, player.shadow_y, player.shadow_width, player.shadow_height, al_map_rgba_f(0, 0, 0, 0.5));
 
+            //STAMINA BAR
+            al_draw_filled_rectangle(20, 60, (5 * MAX_STAMINA) + 20, 70, al_map_rgb(255, 0, 0));
+            al_draw_filled_rectangle(20, 60, (5 * player.stamina_recount) + 20, 70, al_map_rgb(26, 255, 0));
+        
+    
+
+            //LIFE
+            for(int  i = 0; i < MAX_LIFE; i++){
+                if(!player.life[i]){
+                    break;
+                }
+                al_draw_scaled_bitmap(player.heart, 0, 0, 32, 32, (i*30)+20, 15, 30, 30, 0);
+            }
+
             //projectile
             draw_bullet(weapon);
             
             //player
             al_draw_scaled_bitmap(player.sprite, player.sprite_off_x, player.sprite_off_y, player.og_dimensions, player.og_dimensions, player.x, player.y, player.dimensions, player.dimensions, 0);
-            al_draw_textf(font, al_map_rgb(255, 255, 255), 0, 0, 0, "X: %3.1f Y: %3.1f", player.x, player.y);
+            
+            
+            al_draw_text(font, al_map_rgb(35, 66, 32), 20, 50, 0, "STAMINA LEVEL");
+            al_draw_text(font, al_map_rgb(66, 32, 34), 20, 5, 0, "LIFE FORCE");
+
             
 
             al_flip_display();

@@ -18,6 +18,7 @@ struct projectile{
     float y;
     int speed_x;
     int speed_y;
+    int timer;
 };
 
 struct bullet{
@@ -29,6 +30,7 @@ struct bullet{
 
 struct weapon{
     int ammo_amt;
+    int cool_down;
 
     ALLEGRO_BITMAP *projectile;
     int og_dimensions;
@@ -42,13 +44,11 @@ struct weapon* create_weapon();
 
 struct bullet* create_projectile(struct weapon *weapon, struct player player);
 
-int load_weapon(struct weapon *weapon, struct player player);
+int load_weapon(struct weapon *weapon, struct bullet *new, struct player player);
 
-int destroy_bullet(struct weapon *weapon, struct bullet* rem);
+struct bullet *destroy_bullet(struct weapon *weapon, struct bullet* rem);
 
 struct weapon *destroy_weapon(struct weapon *weapon);
-
-void update_bullet_trajectories(struct weapon *weapon, struct environment world);
 
 void draw_bullet(struct weapon *weapon);
 

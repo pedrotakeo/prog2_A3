@@ -13,8 +13,9 @@ struct weapon* create_weapon(){
     if(!(new = malloc (sizeof(struct weapon)))){
         return NULL;
     }
+    new->cool_down = 0;
     new->ammo_amt = 0;
-    new->dimensions = 10;
+    new->dimensions = 35;
     new->og_dimensions = 32;
     
     
@@ -25,7 +26,7 @@ struct weapon* create_weapon(){
 
 struct bullet* create_projectile(struct weapon *weapon, struct player player){
     struct bullet *new;
-    if(!(new = malloc (sizeof(struct projectile)))){
+    if(!(new = malloc (sizeof(struct bullet)))){
         return NULL;
     }
 
@@ -36,16 +37,22 @@ struct bullet* create_projectile(struct weapon *weapon, struct player player){
     new->info.y = player.y;
     new->next = NULL;
     new->prev = NULL;
+    new->info.timer = 0;
 
     return new;
 }
 
-int load_weapon(struct weapon *weapon, struct player player){
-    struct bullet *new = create_projectile(weapon, player);
+int load_weapon(struct weapon *weapon, struct bullet *new, struct player player){
     if(!new){
         return weapon->ammo_amt;
     }
 
+    new->info.x = player.x + 15;
+    new->info.y = player.y + 40;
+    new->info.timer = 0;
+    new->info.order = weapon->ammo_amt + 1;
+    new->next = NULL;
+    new->prev = NULL;
     switch (player.aim){
         case RIGHT:
             new->info.speed_x = 40;
@@ -91,27 +98,26 @@ int load_weapon(struct weapon *weapon, struct player player){
 
 }
 
-int destroy_bullet(struct weapon *weapon, struct bullet* rem){
+struct bullet *destroy_bullet(struct weapon *weapon, struct bullet* rem){
     if(weapon->first == NULL || weapon->last == NULL){
-        return weapon->ammo_amt;
+        return NULL;
     }
 
     if(weapon->first == weapon->last){
-        weapon->first == NULL;
-        weapon->last == NULL;
+        weapon->first = NULL;
+        weapon->last = NULL;
         weapon->ammo_amt--;
 
-        free(rem);
-        return weapon->ammo_amt;
+        return rem;
     }
 
     if(weapon->first == rem){
-        weapon->first == weapon->first->next;
-        weapon->first->prev == NULL;
+        weapon->first = rem->next;
+        weapon->first->prev = NULL;
         weapon->ammo_amt--;
 
-        free(rem);
-        return weapon->ammo_amt;
+
+        return rem;
     }
 
     if(weapon->last == rem){
@@ -119,8 +125,8 @@ int destroy_bullet(struct weapon *weapon, struct bullet* rem){
         weapon->last->next = NULL;
         weapon->ammo_amt--;
 
-        free(rem);
-        return weapon->ammo_amt;
+
+        return rem;
     }
 
 
@@ -128,8 +134,7 @@ int destroy_bullet(struct weapon *weapon, struct bullet* rem){
     rem->next->prev = rem->prev;
     weapon->ammo_amt--;
 
-    free(rem);
-    return weapon->ammo_amt;
+    return rem;
 
 }
 
@@ -137,9 +142,10 @@ struct weapon *destroy_weapon(struct weapon *weapon){
     if(!weapon){
         return NULL;
     }
-
+    struct bullet *aux;
     while(weapon->first){
-        destroy_bullet(weapon, weapon->first);
+        aux = destroy_bullet(weapon, weapon->first);
+        free(aux);
     }
 
     free(weapon);
@@ -147,25 +153,14 @@ struct weapon *destroy_weapon(struct weapon *weapon){
 
 }
 
-void update_bullet_trajectories(struct weapon *weapon, struct environment world){
-    struct bullet* aux = weapon->first;
-    struct bullet* temp;
-    while(aux){
-        temp = aux->next;
-        aux->info.x += aux->info.speed_x;
-        aux->info.y += aux->info.speed_y;
-        if(aux->info.x <=  world.screen_width && aux->info.x >= 0 && aux->info.y <=  world.screen_height && aux->info.y >= 0){// se está dentro da tela
-            destroy_bullet(weapon, aux);
-        }
 
-        aux = temp;
-    }
-    return;
-}
 
 void draw_bullet(struct weapon *weapon){
     struct bullet* aux = weapon->first;
+
+    
     while(aux){
+        
         al_draw_scaled_bitmap(weapon->projectile, 0, 0, weapon->og_dimensions, weapon->og_dimensions, aux->info.x, aux->info.y, weapon->dimensions, weapon->dimensions, 0);
         aux = aux->next;
 
