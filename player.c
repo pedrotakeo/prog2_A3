@@ -26,6 +26,7 @@ void move_player( struct player *player, int direction){
 void initialize_player_info(struct environment world, struct player *player){
     player->x = 200;
     player->y = world.floor;
+    player->universal_x = 200;
     player->og_dimensions = 64;
     player->dimensions = 100;
     player->speed = 20;
@@ -38,6 +39,10 @@ void initialize_player_info(struct environment world, struct player *player){
     player->stamina = MAX_STAMINA;
     player->stamina_recount = MAX_STAMINA;
 
+    player->rgb[0] = 255;
+    player->rgb[1] = 255;
+    player->rgb[2] = 255;
+
     for(int  i = 0; i < MAX_LIFE; i++){
         player->life[i] = true;
     }
@@ -47,4 +52,17 @@ void initialize_player_info(struct environment world, struct player *player){
 void jump_player(struct player* player){
     player->jump_enable = false;
     player->frame_jump = 60;
+}
+
+void determine_universal_screen_limits(struct environment *world){
+    int total_width_scaled = (world->screen_height * 2048)/256;
+
+    world->screen_limit_L = (world->bkg_off_x * total_width_scaled)/2048;
+    world->screen_limit_R = world->screen_limit_L + world->screen_width;
+
+}
+
+void determine_universal_player_pos(struct environment world, struct player *player){
+
+    player->universal_x = world.screen_limit_L + player->x;
 }

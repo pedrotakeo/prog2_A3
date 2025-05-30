@@ -18,6 +18,7 @@
 struct player{
     float x;
     float y;
+    float universal_x;
     int og_dimensions;
     int dimensions;
     int sprite_off_x;
@@ -26,6 +27,8 @@ struct player{
     int direction;
     int jump_enable;
     float frame_jump;
+
+    int rgb[3];
 
     int aim;
     int stamina;
@@ -49,6 +52,9 @@ struct environment{
     int counter;
     int air_round;
 
+    int screen_limit_L;
+    int screen_limit_R;
+
     int bkg_off_x;
     int bkg_img_og_width;
     int bkg_img_og_height;
@@ -57,6 +63,10 @@ struct environment{
 
     ALLEGRO_BITMAP *bkg;
 };
+
+void determine_universal_screen_limits(struct environment *world);
+
+void determine_universal_player_pos(struct environment world, struct player *player);
 
 void initialize_player_info(struct environment world, struct player *player);
 

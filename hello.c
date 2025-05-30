@@ -101,7 +101,12 @@ int main(){
     al_start_timer(timer);
     while(1)
     {   
-        
+        player.rgb[0] = 255;
+        player.rgb[1] = 255;
+        player.rgb[2] = 255;
+        determine_universal_screen_limits(&world);
+        determine_universal_player_pos(world, &player);
+
         player.sprite_off_x = 0;
         if(player.direction == RIGHT){
             player.sprite_off_y = 64;
@@ -255,6 +260,15 @@ int main(){
                     
                 }
 
+
+                //PLAYER COLOR======================================================================================
+
+                if((player.universal_x <= 2700 && player.universal_x >= 2100 || player.universal_x <= 2000 && player.universal_x >= 1400 || player.universal_x <= 4500 && player.universal_x >= 3900) && player.y > world.screen_height/2){
+                    player.rgb[0] = 117;
+                    player.rgb[1] = 79;
+                    player.rgb[2] = 63;
+                }
+
             
                 redraw = true;  // set to be redrawn
                 break;
@@ -300,14 +314,14 @@ int main(){
             draw_bullet(weapon);
 
             //PARAMETERS FOR PLATFORM
-            if(00 - world.bkg_off_x >=0 && 800 - world.bkg_off_x <=world.screen_width){
-                al_draw_line(1000 - world.bkg_off_x, 0, 1000 - world.bkg_off_x, world.screen_height, al_map_rgb(66, 32, 34), 2);
-            }
+            //if(00 - world.bkg_off_x >=0 && 800 - world.bkg_off_x <=world.screen_width){
+                //al_draw_line(1000 - world.bkg_off_x, 0, 1000 - world.bkg_off_x, world.screen_height, al_map_rgb(66, 32, 34), 2);
+            //}
         
            
             
             //player
-            al_draw_tinted_scaled_bitmap(player.sprite, al_map_rgb(255, 255, 255), player.sprite_off_x, player.sprite_off_y, player.og_dimensions, player.og_dimensions, player.x, player.y, player.dimensions, player.dimensions, 0);
+            al_draw_tinted_scaled_bitmap(player.sprite, al_map_rgb(player.rgb[0], player.rgb[1], player.rgb[2]), player.sprite_off_x, player.sprite_off_y, player.og_dimensions, player.og_dimensions, player.x, player.y, player.dimensions, player.dimensions, 0);
             
             al_draw_text(font, al_map_rgb(35, 66, 32), 20, 50, 0, "STAMINA LEVEL");
             al_draw_text(font, al_map_rgb(66, 32, 34), 20, 5, 0, "LIFE FORCE");
@@ -323,6 +337,7 @@ int main(){
     }
 
     weapon = destroy_weapon(weapon);
+    backup = destroy_weapon(backup);
     al_destroy_bitmap(world.bkg);
     al_destroy_bitmap(player.sprite);
     al_destroy_font(font);
