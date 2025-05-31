@@ -5,6 +5,9 @@
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_primitives.h>
+#include "weapon.h"
+#include "player.h"
+struct weapon;
 
 #define RIGHT     1
 #define LEFT     2
@@ -52,6 +55,7 @@ struct environment{
     float floor;
     int counter;
     int air_round;
+    int bkg_off_x_save;
 
     int screen_limit_L;
     int screen_limit_R;
@@ -78,6 +82,8 @@ void set_player_methods(struct player *player);
 void move_player( struct player *player, int direction);
 
 void jump_player(struct player* player);
+
+void game_logic(struct environment *world, struct player *player, struct weapon *weapon, struct weapon *backup, ALLEGRO_KEYBOARD_STATE *ks, ALLEGRO_MOUSE_STATE *ms, int *running_screen, float *og_floor);
 
 
 #endif

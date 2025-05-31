@@ -8,7 +8,8 @@
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_primitives.h>
 #include "player.h"
-#include "weapon.h"
+
+struct player;
 
 #define MAX_weapon 4
 

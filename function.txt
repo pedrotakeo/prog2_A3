@@ -1,0 +1,198 @@
+// RESETA ALTERAÇOES TEMPORARIAS
+                        player->collision_height = player->dimensions;
+                        player->rgb[0] = 255;
+                        player->rgb[1] = 255;
+                        player->rgb[2] = 255;
+                        determine_universal_screen_limits(&world);
+                        determine_universal_player_pos(world, &player);
+
+                        // SE PLAYER ESTA PARA DIREITA, SPRITESHEET METADE DE BAIXO
+                        // SE PLAYER ESTA PARA ESQUERDA, SPRITESHEET METADE DE CIMA
+                        player->sprite_off_x = 0;
+                        if(player->direction == RIGHT){
+                            player->sprite_off_y = 64;
+                        }
+                        else{
+                            player->sprite_off_y = 0;
+                        }
+
+                        if(al_mouse_button_down(&ms, 1)){
+                            player->sprite_off_x = 192;
+                        }
+
+
+                        al_get_keyboard_state(&ks);
+                        al_get_mouse_state(&ms);
+
+                        //KILLS GAME ON "ESC"====================================================================================
+                        if(al_key_down(&ks, ALLEGRO_KEY_ESCAPE))
+                            done = true;
+
+                        //PLAYER MOVES LEFT====================================================================================
+                        if(player->x >= player->speed && (al_key_down(&ks, ALLEGRO_KEY_LEFT) || al_key_down(&ks, ALLEGRO_KEY_A)) && (!al_key_down(&ks, ALLEGRO_KEY_S))){
+
+                            if(player->x > 100 || world->bkg_off_x == 0){
+                                player->move(&player, LEFT);
+                            }else{
+                                if(world->bkg_off_x > 0){
+                                    world->bkg_off_x -= 10;
+                                }
+                                else{
+                                    world->bkg_off_x = 0;
+                                }
+                            }
+
+                            player->sprite_off_x = 64;
+                            if(world->counter % 2){
+                                player->sprite_off_x = 128;
+                            }
+
+                            if(al_mouse_button_down(&ms, 1)){
+                                player->sprite_off_x = 192;
+                                if(world->counter % 2){
+                                    player->sprite_off_x = 256;
+                                }
+                            }
+                            player->direction = LEFT;
+                            player->aim = LEFT;
+                        }
+
+                        //PLAYER MOVES RIGHT====================================================================================
+                        if(player->x <= (world->screen_width - player->speed - player->dimensions) && (al_key_down(&ks, ALLEGRO_KEY_RIGHT) || al_key_down(&ks, ALLEGRO_KEY_D)) && (!al_key_down(&ks, ALLEGRO_KEY_S))){
+
+                            if(player->x < (world->screen_width - 200) || world->bkg_off_x == (2048 - 456)){
+                                player->move(&player, RIGHT);
+                            }
+                            else{
+                                if(world->bkg_off_x < (2048 - 456)){
+                                    world->bkg_off_x += 10;
+                                }
+                                else{
+                                    world->bkg_off_x = 2048 - 456;
+                                }
+                            }
+
+                            player->sprite_off_x = 64;
+                            if(world->counter % 2){
+                                player->sprite_off_x = 128;
+                            }
+
+                            if(al_mouse_button_down(&ms, 1)){
+                                player->sprite_off_x = 192;
+                                if(world->counter % 2){
+                                    player->sprite_off_x = 256;
+                                }
+                            }
+                            player->direction = RIGHT;
+                            player->aim = RIGHT;
+                    
+
+                        }
+
+                        //AIM ADJUSTMENT====================================================================================
+                        if(al_key_down(&ks, ALLEGRO_KEY_W)){
+                            player->aim = UP;
+                        }
+                        if(al_key_down(&ks, ALLEGRO_KEY_W) && al_key_down(&ks, ALLEGRO_KEY_D)){
+                            player->aim = RUP;
+                        }
+                        if(al_key_down(&ks, ALLEGRO_KEY_W) && al_key_down(&ks, ALLEGRO_KEY_A)){
+                            player->aim = LUP;
+                        }
+
+                        //PLAYER JUMPS====================================================================================
+                        if((al_key_down(&ks, ALLEGRO_KEY_SPACE)) && player->jump_enable && (!al_key_down(&ks, ALLEGRO_KEY_S))){
+                            player->jump(&player);
+                    
+                        }
+
+                        if(!player->jump_enable){
+                            player->sprite_off_x = 384;
+                        }
+
+                        player->y -= player->frame_jump;
+                
+                        if(player->y >= world->floor){
+                            player->y = world->floor;
+                            player->frame_jump = 0;
+                            player->jump_enable = true;
+                    
+                        }
+
+                        if (player->y <= world->floor - (8 * player->frame_jump)){
+                            world->air_round++;
+                            if(world->air_round < 40){
+                                player->frame_jump = 0;
+                            }
+                            else{ 
+                                player->frame_jump = -world->gravity;
+                            }
+
+                        }
+
+                        //PLAYER DUCK======================================================================================
+                        if(al_key_down(&ks, ALLEGRO_KEY_S)){
+                            player->sprite_off_x = 320;
+                            player->collision_height = player->collision_height/2;
+                    
+                        }
+
+                        //SHOOTER LOGIC====================================================================================
+                        struct bullet* aux = weapon->first;
+                        struct bullet* temp;
+
+                        if(weapon->cool_down > 0){
+                            weapon->cool_down++;
+                        }
+            
+                        if(weapon->cool_down >= 4){
+                            weapon->cool_down = 0;
+                        }
+            
+            
+                        while(aux){
+                            temp = aux->next;
+                            aux->info.x += aux->info.speed_x;
+                            aux->info.y += aux->info.speed_y;
+                            aux->info.timer++;
+                            if(aux->info.timer >= 20){// se está dentro da tela
+                                aux = destroy_bullet(weapon, aux);
+                                free(aux);
+                            }
+
+                            aux = temp;
+                        }
+
+                        if(player->stamina <= 0){
+                            if(player->stamina < 0){
+                                player->stamina_recount = 0;
+                            }
+                            player->stamina_recount++;
+                            if(player->stamina_recount >= MAX_STAMINA){
+                                player->stamina_recount = MAX_STAMINA;
+                                player->stamina = MAX_STAMINA;
+                            }
+                        }
+
+                        if(al_mouse_button_down(&ms, 1) && weapon->cool_down == 0 && player->stamina > 0 && (!al_key_down(&ks, ALLEGRO_KEY_S))){
+                            player->stamina--;
+                            player->stamina_recount--;
+                            if(backup->first){
+                                weapon->cool_down++;
+                                struct bullet* temp = destroy_bullet(backup, backup->first); // pega bala alocada da lista backup
+                                load_weapon(weapon, temp, player);  //carrega na arma principal
+    
+                                struct bullet* aux = create_projectile(backup, player); 
+                                load_weapon(backup, aux, player);  // faz refill na backup
+                            }
+                    
+                        }
+
+
+                        //PLAYER COLOR======================================================================================
+
+                        if((player->universal_x <= 2700 && player->universal_x >= 2100 || player->universal_x <= 2000 && player->universal_x >= 1400 || player->universal_x <= 4500 && player->universal_x >= 3900) && player->y > world->screen_height/2){
+                            player->rgb[0] = 117;
+                            player->rgb[1] = 79;
+                            player->rgb[2] = 63;
+                        }

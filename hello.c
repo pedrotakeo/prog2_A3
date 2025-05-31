@@ -10,6 +10,7 @@
 #define MENU 0
 #define GAME 1
 #define GAME_OVER 2
+#define END 3
 
 void must_init(bool test, const char *description)
 {
@@ -44,6 +45,20 @@ int main(){
 
     //MENU SETTINGS=========================================================================
     int bkg_speed_menu = 1;
+    int button_width_play = 0;
+    int button_height_play = 0;
+    int button_width_leave = 0;
+    int button_height_leave = 0;
+
+    ALLEGRO_BITMAP* bkg_menu = al_load_bitmap("assets/bkg_blur.png");
+    must_init(bkg_menu, "blur"); 
+
+    ALLEGRO_BITMAP* play_bt = al_load_bitmap("assets/play.png");
+    must_init(play_bt, "play"); 
+
+    ALLEGRO_BITMAP* leave_bt = al_load_bitmap("assets/leave.png");
+    must_init(leave_bt, "leave"); 
+
 
     //GAME SETTINGS=========================================================================
     struct environment world; 
@@ -54,7 +69,9 @@ int main(){
     ALLEGRO_DISPLAY* disp = al_create_display(world.screen_width, world.screen_height);
     must_init(disp, "display");
 
-    //setting player rules
+    float og_floor = world.floor;
+
+    //setting player rules======================================================================================================
     struct player player;
     set_player_methods(&player);
     initialize_player_info(world, &player);
@@ -65,7 +82,7 @@ int main(){
     must_init(player.heart, "heart");
     al_convert_mask_to_alpha(player.heart, al_map_rgb(26, 255, 0));
 
-    //projectile BACKUP;
+    //projectile BACKUP======================================================================================================
     struct weapon *backup;
     backup = create_weapon();
     must_init(backup, "weapon");
@@ -78,9 +95,7 @@ int main(){
         load_weapon(backup, aux, player);
     }
     
-
-
-    //projectile rules
+    //projectile rules======================================================================================================
     struct weapon *weapon;
     weapon = create_weapon();
     must_init(weapon, "weapon");
@@ -108,224 +123,57 @@ int main(){
         {
         
             case ALLEGRO_EVENT_TIMER:
-            
-                switch(running_screen){
-                    case MENU:
-                        al_get_keyboard_state(&ks);
+                if(running_screen == MENU){
+                    al_get_keyboard_state(&ks);
+                    al_get_mouse_state(&ms);
 
-                        if(world.bkg_off_x > 2048 - 551){
-                            world.bkg_off_x = 0;
-                        }
-                        world.bkg_off_x += bkg_speed_menu;
-                        redraw = true;
-                        if(al_key_down(&ks, ALLEGRO_KEY_ENTER))
-                            running_screen = GAME;
-                            world.bkg_off_x = 0;
-                            
-                        break;
-                    case GAME:
-                        // RESETA ALTERAÇOES TEMPORARIAS
-                        player.collision_height = player.dimensions;
-                        player.rgb[0] = 255;
-                        player.rgb[1] = 255;
-                        player.rgb[2] = 255;
-                        determine_universal_screen_limits(&world);
-                        determine_universal_player_pos(world, &player);
+                    button_width_play = 200;
+                    button_height_play = 67;
+                    button_width_leave = 200;
+                    button_height_leave = 67;
 
-                        // SE PLAYER ESTA PARA DIREITA, SPRITESHEET METADE DE BAIXO
-                        // SE PLAYER ESTA PARA ESQUERDA, SPRITESHEET METADE DE CIMA
-                        player.sprite_off_x = 0;
-                        if(player.direction == RIGHT){
-                            player.sprite_off_y = 64;
+                    if(world.bkg_off_x > 2048 - 551){
+                        world.bkg_off_x = 0;
+                    }
+                    world.bkg_off_x += bkg_speed_menu;
+
+                    if((ms.x >= ((world.screen_width/2) - 100) && ms.x <= ((world.screen_width/2) + 100) && ms.y >= 460 && ms.y <= 527)){
+                        if(!al_mouse_button_down(&ms, 1)){
+                            button_width_play = 220;
+                            button_height_play = 73;
                         }
                         else{
-                            player.sprite_off_y = 0;
+                            world.bkg_off_x = world.bkg_off_x_save;
+                            running_screen = GAME;
                         }
+                    }
 
-                        if(al_mouse_button_down(&ms, 1)){
-                            player.sprite_off_x = 192;
+                    if((ms.x >= ((world.screen_width/2) - 100) && ms.x <= ((world.screen_width/2) + 100) && ms.y >= 550 && ms.y <= 617)){
+                        if(!al_mouse_button_down(&ms, 1)){
+                            button_width_leave = 220;
+                            button_height_leave = 73;
                         }
-
-
-                        al_get_keyboard_state(&ks);
-                        al_get_mouse_state(&ms);
-
-                        //KILLS GAME ON "ESC"====================================================================================
-                        if(al_key_down(&ks, ALLEGRO_KEY_ESCAPE))
+                        else{
                             done = true;
-
-                        //PLAYER MOVES LEFT====================================================================================
-                        if(player.x >= player.speed && (al_key_down(&ks, ALLEGRO_KEY_LEFT) || al_key_down(&ks, ALLEGRO_KEY_A)) && (!al_key_down(&ks, ALLEGRO_KEY_S))){
-
-                            if(player.x > 100 || world.bkg_off_x == 0){
-                                player.move(&player, LEFT);
-                            }else{
-                                if(world.bkg_off_x > 0){
-                                    world.bkg_off_x -= 10;
-                                }
-                                else{
-                                    world.bkg_off_x = 0;
-                                }
-                            }
-
-                            player.sprite_off_x = 64;
-                            if(world.counter % 2){
-                                player.sprite_off_x = 128;
-                            }
-
-                            if(al_mouse_button_down(&ms, 1)){
-                                player.sprite_off_x = 192;
-                                if(world.counter % 2){
-                                    player.sprite_off_x = 256;
-                                }
-                            }
-                            player.direction = LEFT;
-                            player.aim = LEFT;
+                            break;
                         }
+                    }
 
-                        //PLAYER MOVES RIGHT====================================================================================
-                        if(player.x <= (world.screen_width - player.speed - player.dimensions) && (al_key_down(&ks, ALLEGRO_KEY_RIGHT) || al_key_down(&ks, ALLEGRO_KEY_D)) && (!al_key_down(&ks, ALLEGRO_KEY_S))){
+                    if(al_key_down(&ks, ALLEGRO_KEY_ENTER)){
+                        world.bkg_off_x = world.bkg_off_x_save;
+                        running_screen = GAME;
+                        
+                    }
 
-                            if(player.x < (world.screen_width - 200) || world.bkg_off_x == (2048 - 456)){
-                                player.move(&player, RIGHT);
-                            }
-                            else{
-                                if(world.bkg_off_x < (2048 - 456)){
-                                    world.bkg_off_x += 10;
-                                }
-                                else{
-                                    world.bkg_off_x = 2048 - 456;
-                                }
-                            }
+                    redraw = true;
+                }
 
-                            player.sprite_off_x = 64;
-                            if(world.counter % 2){
-                                player.sprite_off_x = 128;
-                            }
-
-                            if(al_mouse_button_down(&ms, 1)){
-                                player.sprite_off_x = 192;
-                                if(world.counter % 2){
-                                    player.sprite_off_x = 256;
-                                }
-                            }
-                            player.direction = RIGHT;
-                            player.aim = RIGHT;
-                    
-
-                        }
-
-                        //AIM ADJUSTMENT====================================================================================
-                        if(al_key_down(&ks, ALLEGRO_KEY_W)){
-                            player.aim = UP;
-                        }
-                        if(al_key_down(&ks, ALLEGRO_KEY_W) && al_key_down(&ks, ALLEGRO_KEY_D)){
-                            player.aim = RUP;
-                        }
-                        if(al_key_down(&ks, ALLEGRO_KEY_W) && al_key_down(&ks, ALLEGRO_KEY_A)){
-                            player.aim = LUP;
-                        }
-
-                        //PLAYER JUMPS====================================================================================
-                        if((al_key_down(&ks, ALLEGRO_KEY_SPACE)) && player.jump_enable && (!al_key_down(&ks, ALLEGRO_KEY_S))){
-                            player.jump(&player);
-                    
-                        }
-
-                        if(!player.jump_enable){
-                            player.sprite_off_x = 384;
-                        }
-
-                        player.y -= player.frame_jump;
-                
-                        if(player.y >= world.floor){
-                            player.y = world.floor;
-                            player.frame_jump = 0;
-                            player.jump_enable = true;
-                    
-                        }
-
-                        if (player.y <= world.floor - (8 * player.frame_jump)){
-                            world.air_round++;
-                            if(world.air_round < 40){
-                                player.frame_jump = 0;
-                            }
-                            else{ 
-                                player.frame_jump = -world.gravity;
-                            }
-
-                        }
-
-                        //PLAYER DUCK======================================================================================
-                        if(al_key_down(&ks, ALLEGRO_KEY_S)){
-                            player.sprite_off_x = 320;
-                            player.collision_height = player.collision_height/2;
-                    
-                        }
-
-                        //SHOOTER LOGIC====================================================================================
-                        struct bullet* aux = weapon->first;
-                        struct bullet* temp;
-
-                        if(weapon->cool_down > 0){
-                            weapon->cool_down++;
-                        }
+                else if(running_screen == GAME){
+                    al_get_keyboard_state(&ks);
+                    al_get_mouse_state(&ms);
+                    game_logic(&world, &player, weapon, backup, &ks, &ms, &running_screen, &og_floor);  //LOGICA PRINCIPAL DO JOGO;
             
-                        if(weapon->cool_down >= 4){
-                            weapon->cool_down = 0;
-                        }
-            
-            
-                        while(aux){
-                            temp = aux->next;
-                            aux->info.x += aux->info.speed_x;
-                            aux->info.y += aux->info.speed_y;
-                            aux->info.timer++;
-                            if(aux->info.timer >= 20){// se está dentro da tela
-                                aux = destroy_bullet(weapon, aux);
-                                free(aux);
-                            }
-
-                            aux = temp;
-                        }
-
-                        if(player.stamina <= 0){
-                            if(player.stamina < 0){
-                                player.stamina_recount = 0;
-                            }
-                            player.stamina_recount++;
-                            if(player.stamina_recount >= MAX_STAMINA){
-                                player.stamina_recount = MAX_STAMINA;
-                                player.stamina = MAX_STAMINA;
-                            }
-                        }
-
-                        if(al_mouse_button_down(&ms, 1) && weapon->cool_down == 0 && player.stamina > 0 && (!al_key_down(&ks, ALLEGRO_KEY_S))){
-                            player.stamina--;
-                            player.stamina_recount--;
-                            if(backup->first){
-                                weapon->cool_down++;
-                                struct bullet* temp = destroy_bullet(backup, backup->first); // pega bala alocada da lista backup
-                                load_weapon(weapon, temp, player);  //carrega na arma principal
-    
-                                struct bullet* aux = create_projectile(backup, player); 
-                                load_weapon(backup, aux, player);  // faz refill na backup
-                            }
-                    
-                        }
-
-
-                        //PLAYER COLOR======================================================================================
-
-                        if((player.universal_x <= 2700 && player.universal_x >= 2100 || player.universal_x <= 2000 && player.universal_x >= 1400 || player.universal_x <= 4500 && player.universal_x >= 3900) && player.y > world.screen_height/2){
-                            player.rgb[0] = 117;
-                            player.rgb[1] = 79;
-                            player.rgb[2] = 63;
-                        }
-
-            
-                        redraw = true; // set to be redrawn
-                        break;
+                    redraw = true; // set to be redrawn
                 }
                 
                 break;
@@ -344,9 +192,13 @@ int main(){
             if(running_screen ==  MENU){
                 al_clear_to_color(al_map_rgb(255, 255, 255));
 
-                al_draw_tinted_scaled_bitmap(world.bkg, al_map_rgb(180, 180, 180), world.bkg_off_x, 0, ((world.bkg_img_og_height * world.screen_width)/world.screen_height), world.bkg_img_og_height, 0, 0, world.screen_width, world.screen_height, 0);
+                al_draw_tinted_scaled_bitmap(bkg_menu, al_map_rgb(120, 120, 100), world.bkg_off_x, 0, ((world.bkg_img_og_height * world.screen_width)/world.screen_height), world.bkg_img_og_height, 0, 0, world.screen_width, world.screen_height, 0);
                 
-                al_draw_text(font, al_map_rgb(255, 255, 255), 20, 50, 0, "AMMUNITION");
+                al_draw_text(font, al_map_rgb(255, 255, 255), world.screen_width - 320, world.screen_height - 12, 0, "Ken no subarashii sabaku taikai - V0.5");
+
+                al_draw_scaled_bitmap(play_bt, 0, 0, 60, 20, (world.screen_width/2) - (button_width_play/2), 460, button_width_play, button_height_play, 0);
+                al_draw_scaled_bitmap(leave_bt, 0, 0, 60, 20, (world.screen_width/2) - (button_width_leave/2), 550, button_width_leave, button_height_leave, 0);
+                
             }
 
             //GAME SCREEN
@@ -365,19 +217,21 @@ int main(){
             
 
                 //STAMINA BAR
-                al_draw_filled_rectangle(20, 60, (5 * MAX_STAMINA) + 20, 70, al_map_rgb(255, 0, 0));
-                al_draw_filled_rectangle(20, 60, (5 * player.stamina_recount) + 20, 70, al_map_rgb(26, 255, 0));
+                al_draw_filled_rectangle(20, 50, (5 * MAX_STAMINA) + 20, 60, al_map_rgb(255, 0, 0));
+                al_draw_filled_rectangle(20, 50, (5 * player.stamina_recount) + 20, 60, al_map_rgb(26, 255, 0));
         
-    
-
                 //LIFE
-                for(int  i = 0; i < MAX_LIFE; i++){
+                for(int  i = 0; i < MAX_LIFE; i++){  //HEART CONTAINERS
+                    al_draw_tinted_scaled_bitmap(player.heart, al_map_rgb(100, 100, 100), 0, 0, 32, 32, (i*30)+20, 10, 30, 30, 0);
+                }
+
+                for(int  i = 0; i < MAX_LIFE; i++){ // ACTUAL HEARTS
                     if(!player.life[i]){
                         break;
                     }
-                    al_draw_scaled_bitmap(player.heart, 0, 0, 32, 32, (i*30)+20, 15, 30, 30, 0);
+                    al_draw_scaled_bitmap(player.heart, 0, 0, 32, 32, (i*30)+20, 10, 30, 30, 0);
                 }
-
+                
                 //projectile
                 draw_bullet(weapon);
 
@@ -385,8 +239,6 @@ int main(){
                 //player
                 al_draw_tinted_scaled_bitmap(player.sprite, al_map_rgb(player.rgb[0], player.rgb[1], player.rgb[2]), player.sprite_off_x, player.sprite_off_y, player.og_dimensions, player.og_dimensions, player.x, player.y, player.dimensions, player.dimensions, 0);
             
-                al_draw_text(font, al_map_rgb(35, 66, 32), 20, 50, 0, "AMMUNITION");
-                al_draw_text(font, al_map_rgb(66, 32, 34), 20, 5, 0, "LIFE FORCE");
 
             }
             
