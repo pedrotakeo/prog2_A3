@@ -44,7 +44,6 @@ int main(){
     must_init(al_init_image_addon(), "image addon");
 
     //MENU SETTINGS=========================================================================
-    int bkg_speed_menu = 1;
     int button_width_play = 0;
     int button_height_play = 0;
     int button_width_leave = 0;
@@ -55,9 +54,16 @@ int main(){
 
     ALLEGRO_BITMAP* play_bt = al_load_bitmap("assets/play.png");
     must_init(play_bt, "play"); 
+    al_convert_mask_to_alpha(play_bt, al_map_rgb(78, 255, 0));
 
     ALLEGRO_BITMAP* leave_bt = al_load_bitmap("assets/leave.png");
     must_init(leave_bt, "leave"); 
+    al_convert_mask_to_alpha(leave_bt, al_map_rgb(78, 255, 0));
+
+    ALLEGRO_BITMAP* main_title = al_load_bitmap("assets/main_title.png");
+    must_init(main_title, "leave"); 
+    al_convert_mask_to_alpha(main_title, al_map_rgb(26, 255, 0));
+
 
 
     //GAME SETTINGS=========================================================================
@@ -81,6 +87,7 @@ int main(){
     player.heart = al_load_bitmap("assets/life.png");
     must_init(player.heart, "heart");
     al_convert_mask_to_alpha(player.heart, al_map_rgb(26, 255, 0));
+
 
     //projectile BACKUP======================================================================================================
     struct weapon *backup;
@@ -132,18 +139,12 @@ int main(){
                     button_width_leave = 200;
                     button_height_leave = 67;
 
-                    if(world.bkg_off_x > 2048 - 551){
-                        world.bkg_off_x = 0;
-                    }
-                    world.bkg_off_x += bkg_speed_menu;
-
                     if((ms.x >= ((world.screen_width/2) - 100) && ms.x <= ((world.screen_width/2) + 100) && ms.y >= 460 && ms.y <= 527)){
                         if(!al_mouse_button_down(&ms, 1)){
                             button_width_play = 220;
                             button_height_play = 73;
                         }
                         else{
-                            world.bkg_off_x = world.bkg_off_x_save;
                             running_screen = GAME;
                         }
                     }
@@ -160,9 +161,8 @@ int main(){
                     }
 
                     if(al_key_down(&ks, ALLEGRO_KEY_ENTER)){
-                        world.bkg_off_x = world.bkg_off_x_save;
                         running_screen = GAME;
-                        
+                        world.counter = 0;
                     }
 
                     redraw = true;
@@ -192,12 +192,14 @@ int main(){
             if(running_screen ==  MENU){
                 al_clear_to_color(al_map_rgb(255, 255, 255));
 
-                al_draw_tinted_scaled_bitmap(bkg_menu, al_map_rgb(120, 120, 100), world.bkg_off_x, 0, ((world.bkg_img_og_height * world.screen_width)/world.screen_height), world.bkg_img_og_height, 0, 0, world.screen_width, world.screen_height, 0);
+                al_draw_scaled_bitmap(bkg_menu, 0, 0, 1280, 720, 0, 0, world.screen_width, world.screen_height, 0);
                 
                 al_draw_text(font, al_map_rgb(255, 255, 255), world.screen_width - 320, world.screen_height - 12, 0, "Ken no subarashii sabaku taikai - V0.5");
 
-                al_draw_scaled_bitmap(play_bt, 0, 0, 60, 20, (world.screen_width/2) - (button_width_play/2), 460, button_width_play, button_height_play, 0);
-                al_draw_scaled_bitmap(leave_bt, 0, 0, 60, 20, (world.screen_width/2) - (button_width_leave/2), 550, button_width_leave, button_height_leave, 0);
+                al_draw_scaled_bitmap(play_bt, 0, 0, 120, 40, (world.screen_width/2) - (button_width_play/2), 460, button_width_play, button_height_play, 0);
+                al_draw_scaled_bitmap(leave_bt, 0, 0, 120, 40, (world.screen_width/2) - (button_width_leave/2), 550, button_width_leave, button_height_leave, 0);
+
+                al_draw_scaled_bitmap(main_title, 0, 0, 448, 256, (world.screen_width/2) - 250, (world.screen_width/2) - 550, 500, 286, 0);
                 
             }
 

@@ -55,7 +55,6 @@ struct environment{
     float floor;
     int counter;
     int air_round;
-    int bkg_off_x_save;
 
     int screen_limit_L;
     int screen_limit_R;

@@ -60,7 +60,7 @@ void initialize_world_info(struct environment *world){
     world->bkg_img_og_height = 256;
     world->bkg_img_og_width = 2048;
     world->air_round = 0;
-    world->bkg_off_x_save = 0;
+
 }
 
 
@@ -112,7 +112,6 @@ void game_logic(struct environment *world, struct player *player, struct weapon 
 
     //OPENS MENU ON "ESC"====================================================================================
     if(al_key_down(ks, ALLEGRO_KEY_ESCAPE)){
-       world->bkg_off_x_save = world->bkg_off_x;
         *running_screen = 0; // abre menu
     }
 
@@ -129,13 +128,13 @@ void game_logic(struct environment *world, struct player *player, struct weapon 
         }
 
         player->sprite_off_x = 64;
-        if(world->counter % 2){
+        if(world->counter % 3){
             player->sprite_off_x = 128;
         }
 
         if(al_mouse_button_down(ms, 1)){
             player->sprite_off_x = 192;
-            if(world->counter % 2){
+            if(world->counter % 3){
                 player->sprite_off_x = 256;
             }
         }
@@ -154,13 +153,13 @@ void game_logic(struct environment *world, struct player *player, struct weapon 
         }
 
         player->sprite_off_x = 64;
-        if(world->counter % 2){
+        if(world->counter % 3){
             player->sprite_off_x = 128;
         }
 
         if(al_mouse_button_down(ms, 1)){
             player->sprite_off_x = 192;
-            if(world->counter % 2){
+            if(world->counter % 3){
                 player->sprite_off_x = 256;
             }
         }
@@ -259,7 +258,7 @@ void game_logic(struct environment *world, struct player *player, struct weapon 
         }
     }
 
-    if(al_mouse_button_down(ms, 1) && weapon->cool_down == 0 && player->stamina > 0 && (!al_key_down(ks, ALLEGRO_KEY_S))){
+    if(al_mouse_button_down(ms, 1) && weapon->cool_down == 0 && player->stamina > 0 && (!al_key_down(ks, ALLEGRO_KEY_S)) && world->counter > 60){
         player->stamina--;
         player->stamina_recount--;
         if(backup->first){
