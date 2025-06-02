@@ -11,6 +11,7 @@
 
 struct horde;
 struct weapon;
+struct boss;
 
 #define RIGHT     1
 #define LEFT     2
@@ -22,6 +23,11 @@ struct weapon;
 #define LDOWN    8
 #define MAX_STAMINA 50
 #define MAX_LIFE 10
+
+#define MENU 0
+#define GAME 1
+#define GAME_OVER 2
+#define GAME_BOSS_STATE 3
 
 
 struct environment{
@@ -69,7 +75,7 @@ struct player{  //PLAYER CLASS
     ALLEGRO_BITMAP *sprite;
     ALLEGRO_BITMAP *heart;
 
-    void (*move)(struct environment*, struct player*, ALLEGRO_KEYBOARD_STATE*, ALLEGRO_MOUSE_STATE*);
+    void (*move)(struct environment*, struct player*, ALLEGRO_KEYBOARD_STATE*, ALLEGRO_MOUSE_STATE*, int);
 
     void (*jump)(struct environment*, struct player*, ALLEGRO_KEYBOARD_STATE*, float*);
 
@@ -100,6 +106,8 @@ void player_to_enemy_damage(struct environment *world, struct player *player, st
 
 void enemy_to_player_damage(struct environment *world, struct player *player, struct weapon *weapon, struct horde *horde, int *running_screen);
 
+void player_to_boss_damage(struct environment world, struct boss *boss, struct weapon *weapon);
+
 
 //PLAYER STUFF
 void set_player_methods(struct player *player);
@@ -108,7 +116,7 @@ void determine_universal_screen_limits(struct environment *world);
 
 void determine_universal_player_pos(struct environment world, struct player *player);
 
-void move_player(struct environment *world, struct player *player, ALLEGRO_KEYBOARD_STATE *ks, ALLEGRO_MOUSE_STATE *ms);
+void move_player(struct environment *world, struct player *player, ALLEGRO_KEYBOARD_STATE *ks, ALLEGRO_MOUSE_STATE *ms, int game_state);
 
 void jump_player(struct environment *world, struct player *player, ALLEGRO_KEYBOARD_STATE *ks, float *og_floor);
 

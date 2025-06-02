@@ -47,7 +47,15 @@ struct horde{
 
     struct enemy enemy[ENEMY_AMT];
     ALLEGRO_BITMAP *enemy_sprite;
-    ALLEGRO_BITMAP *bullet;
+};
+
+struct boss{
+    int life;
+    int timer;
+
+    ALLEGRO_BITMAP *enemy_sprite;
+
+    int rgb[3];
 };
 
 void initialize_enemy_info(struct environment world, struct horde* horde);
@@ -55,5 +63,7 @@ void initialize_enemy_info(struct environment world, struct horde* horde);
 void enemy_logic(struct environment world, struct player player, struct horde *horde);
 
 void update_enemy_pos(struct environment world, struct horde *horde);
+
+void initialize_boss_info(struct boss *boss);
 
 #endif

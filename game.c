@@ -62,61 +62,96 @@ void set_player_methods(struct player *player){
 
 }
 
-void move_player(struct environment *world, struct player *player, ALLEGRO_KEYBOARD_STATE *ks, ALLEGRO_MOUSE_STATE *ms){
+void move_player(struct environment *world, struct player *player, ALLEGRO_KEYBOARD_STATE *ks, ALLEGRO_MOUSE_STATE *ms, int game_state){
 
-    //PLAYER MOVES LEFT====================================================================================
-    if(player->x >= player->speed && (al_key_down(ks, ALLEGRO_KEY_LEFT) || al_key_down(ks, ALLEGRO_KEY_A)) && (!al_key_down(ks, ALLEGRO_KEY_S))){
+
+    if(game_state ==  GAME){
+        //PLAYER MOVES LEFT====================================================================================
+        if(player->x >= player->speed && (al_key_down(ks, ALLEGRO_KEY_LEFT) || al_key_down(ks, ALLEGRO_KEY_A)) && (!al_key_down(ks, ALLEGRO_KEY_S))){
 
     
-        if(player->x <= world->screen_width/2 && player->universal_x >= (world->screen_width/2)+(player->dimensions/2)){
-            world->bkg_off_x -= 10;
-        }
-        else if(player->universal_x >= 100){
-
-            player->x -= player->speed;
-        }
-
-        player->sprite_off_x = 64;
-        if(world->counter % 3){
-            player->sprite_off_x = 128;
-        }
-
-        if(al_mouse_button_down(ms, 1)){
-            player->sprite_off_x = 192;
-            if(world->counter % 3){
-                player->sprite_off_x = 256;
+            if(player->x <= world->screen_width/2 && player->universal_x >= (world->screen_width/2)+(player->dimensions/2)){
+                world->bkg_off_x -= 10;
             }
-        }
-        player->direction = LEFT;
-        player->aim = LEFT;
-    }
+            else if(player->universal_x >= 100){
 
-    //PLAYER MOVES RIGHT====================================================================================
-    if(player->x <= (world->screen_width - player->speed - player->dimensions) && (al_key_down(ks, ALLEGRO_KEY_RIGHT) || al_key_down(ks, ALLEGRO_KEY_D)) && (!al_key_down(ks, ALLEGRO_KEY_S))){
-
-        if(player->x >= world->screen_width/2 && player->universal_x <= 5760 - (world->screen_width/2) - (player->dimensions/2)){
-            world->bkg_off_x += 10;
-        }
-        else if(player->universal_x <= 5660){
-            player->x += player->speed;
-        }
-
-        player->sprite_off_x = 64;
-        if(world->counter % 3){
-            player->sprite_off_x = 128;
-        }
-
-        if(al_mouse_button_down(ms, 1)){
-            player->sprite_off_x = 192;
-            if(world->counter % 3){
-                player->sprite_off_x = 256;
+                player->x -= player->speed;
             }
+
+            player->sprite_off_x = 64;
+            if(world->counter % 3){
+                player->sprite_off_x = 128;
+            }
+
+            if(al_mouse_button_down(ms, 1)){
+                player->sprite_off_x = 192;
+                if(world->counter % 3){
+                    player->sprite_off_x = 256;
+                }
+            }
+            player->direction = LEFT;
+            player->aim = LEFT;
         }
-        player->direction = RIGHT;
-        player->aim = RIGHT;
+
+        //PLAYER MOVES RIGHT====================================================================================
+        if(player->x <= (world->screen_width - player->speed - player->dimensions) && (al_key_down(ks, ALLEGRO_KEY_RIGHT) || al_key_down(ks, ALLEGRO_KEY_D)) && (!al_key_down(ks, ALLEGRO_KEY_S))){
+
+            if(player->x >= world->screen_width/2 && player->universal_x <= 5760 - (world->screen_width/2) - (player->dimensions/2)){
+                world->bkg_off_x += 10;
+            }
+            else if(player->universal_x <= 5660){
+                player->x += player->speed;
+            }
+
+            player->sprite_off_x = 64;
+            if(world->counter % 3){
+                player->sprite_off_x = 128;
+            }
+
+            if(al_mouse_button_down(ms, 1)){
+                player->sprite_off_x = 192;
+                if(world->counter % 3){
+                    player->sprite_off_x = 256;
+                }
+            }
+            player->direction = RIGHT;
+            player->aim = RIGHT;
 
 
+        }
     }
+    else if(game_state == GAME_BOSS_STATE){
+        player->speed = 15;
+        if(player->x >= 0 && player->x + 64 <= world->screen_width && player->y >= 0 && player->y + 64 <= world->screen_width){
+            if(al_key_down(ks, ALLEGRO_KEY_A)){
+                player->x -= player->speed;
+                if(player->x < 0){
+                    player->x = 0;
+                }
+            }
+            if(al_key_down(ks, ALLEGRO_KEY_D)){
+                player->x += player->speed;
+                if(player->x + 64 > world->screen_width){
+                    player->x = world->screen_width - 64;
+                }
+            }
+            if(al_key_down(ks, ALLEGRO_KEY_W)){
+                player->y -= player->speed;
+                if(player->y < 0){
+                    player->y = 0;
+                }
+            }
+            if(al_key_down(ks, ALLEGRO_KEY_S)){
+                player->y += player->speed;
+                if(player->y + 64 > world->screen_height){
+                    player->y = world->screen_height - 64;
+                }
+            }
+            
+        }
+        
+    }
+    
     
 }
 
@@ -248,7 +283,7 @@ void player_shoot(struct environment *world, struct player *player, struct weapo
         aux->info.x += aux->info.speed_x;
         aux->info.y += aux->info.speed_y;
         aux->info.timer++;
-        if(aux->info.timer >= 20){// se está dentro da tela
+        if(aux->info.timer >= 30){// se está dentro da tela
             aux = destroy_bullet(weapon, aux);
             free(aux);
         }
@@ -355,5 +390,25 @@ void enemy_to_player_damage(struct environment *world, struct player *player, st
 
 
         }
+    }
+}
+
+
+void player_to_boss_damage(struct environment world, struct boss *boss, struct weapon *weapon){
+    struct bullet* aux = weapon->first;
+    struct bullet* temp;
+    while(aux){
+        temp = aux->next;
+        if(aux->info.x > world.screen_width - 192){
+            aux = destroy_bullet(weapon, aux);
+            free(aux);
+            boss->life--;
+            boss->rgb[0] = 255;
+            boss->rgb[1] = 0;
+            boss->rgb[2] = 0;
+        }
+        
+
+        aux = temp;
     }
 }

@@ -17,13 +17,13 @@ void initialize_enemy_info(struct environment world, struct horde* horde){
         horde->enemy[i].state = ALIVE;
         horde->enemy[i].round = 0;
         horde->enemy[i].timer = 0;
-        horde->enemy[i].bullet.order = 0;
-        horde->enemy[i].bullet.shoot = false;
-        horde->enemy[i].bullet.speed_x = 40;
-        horde->enemy[i].bullet.speed_y = 0;
-        horde->enemy[i].bullet.timer = 0;
-        horde->enemy[i].bullet.x = 6000;
-        horde->enemy[i].bullet.y = 800;
+        //horde->enemy[i].bullet.order = 0;
+        //horde->enemy[i].bullet.shoot = false;
+        //horde->enemy[i].bullet.speed_x = 40;
+        //horde->enemy[i].bullet.speed_y = 0;
+        //horde->enemy[i].bullet.timer = 0;
+        //horde->enemy[i].bullet.x = 6000;
+        //horde->enemy[i].bullet.y = 800;
         horde->enemy[i].target_pos = 0;
         horde->enemy[i].player_pos = 0;
         horde->enemy[i].rgb[0] = 255;
@@ -41,7 +41,7 @@ void initialize_enemy_info(struct environment world, struct horde* horde){
     horde->enemy[0].y = world.screen_height - 175;
     horde->enemy[0].parameter_left = 100;
     horde->enemy[0].parameter_right = 5660;
-    horde->enemy[1].sprite_off_y = 0;
+    horde->enemy[0].sprite_off_y = 0;
 
     //ENEMY 1
     horde->enemy[1].direction = LEFT;
@@ -54,11 +54,11 @@ void initialize_enemy_info(struct environment world, struct horde* horde){
 
     //ENEMY 2
     horde->enemy[2].direction = RIGHT;
-    horde->enemy[2].universal_x = 2100;
+    horde->enemy[2].universal_x = 2400;
     horde->enemy[2].x = horde->enemy[2].universal_x - world.screen_limit_L;
     horde->enemy[2].y = (world.screen_height/2 )- 135;
-    horde->enemy[2].parameter_left = 2100;
-    horde->enemy[2].parameter_right = 2600;
+    horde->enemy[2].parameter_left = 2200;
+    horde->enemy[2].parameter_right = 2700;
     horde->enemy[2].sprite_off_y = 64;
 
     //ENEMY 3
@@ -88,6 +88,14 @@ void initialize_enemy_info(struct environment world, struct horde* horde){
     horde->enemy[5].parameter_right = 4450;
     horde->enemy[5].sprite_off_y = 0;
 
+}
+
+void initialize_boss_info(struct boss *boss){
+    boss->life = 200 * MAX_LIFE;
+    boss->timer = 0;
+    boss->rgb[0] = 255;
+    boss->rgb[1] = 255;
+    boss->rgb[2] = 255;
 }
 
 
@@ -163,10 +171,10 @@ void round_1_enemy (struct environment world , struct enemy* enemy){
 
     }
 
-    enemy->bullet.x += enemy->bullet.speed_x;
+    //enemy->bullet.x += enemy->bullet.speed_x;
 
     if(enemy->universal_x == enemy->target_pos){    //IF IN POSITION DONE
-        if(enemy->direction == RIGHT){
+        /*if(enemy->direction == RIGHT){
             enemy->bullet.speed_x = 20;
         }
         else{
@@ -174,7 +182,7 @@ void round_1_enemy (struct environment world , struct enemy* enemy){
         }
 
         enemy->bullet.x = enemy->x + 15;
-        enemy->bullet.y = enemy->y + 40;
+        enemy->bullet.y = enemy->y + 40;*/
 
         enemy->round = 0;
         enemy->timer = 0;

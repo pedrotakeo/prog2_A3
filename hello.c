@@ -8,10 +8,6 @@
 #include "weapon.h"
 #include "enemy.h"
 
-#define MENU 0
-#define GAME 1
-#define GAME_OVER 2
-
 void must_init(bool test, const char *description)
 {
     if(test) return;
@@ -117,9 +113,11 @@ int main(){
     must_init(horde.enemy_sprite, "enemy");
     al_convert_mask_to_alpha(horde.enemy_sprite, al_map_rgb(26, 255, 0));
 
-    ALLEGRO_BITMAP* enemy_tama = al_load_bitmap("assets/proj_enemy.png");
-    must_init(enemy_tama, "enemy_proj"); 
-    al_convert_mask_to_alpha(enemy_tama, al_map_rgb(26, 255, 0));
+    struct boss boss;
+    initialize_boss_info(&boss);
+    boss.enemy_sprite = al_load_bitmap("assets/enemy.png");
+    must_init(boss.enemy_sprite, "boss");
+    al_convert_mask_to_alpha(boss.enemy_sprite, al_map_rgb(26, 255, 0));
 
     must_init(al_init_primitives_addon(), "primitives");
     al_register_event_source(queue, al_get_keyboard_event_source());
@@ -204,6 +202,11 @@ int main(){
                 else if(running_screen == GAME){
                     al_get_keyboard_state(&ks);
                     al_get_mouse_state(&ms);
+
+                    if(al_key_down(&ks, ALLEGRO_KEY_B)){
+                        running_screen = GAME_BOSS_STATE;
+                        world.counter = 0;
+                    }
                     // RESETA ALTERAÇOES TEMPORARIAS
                     reset_info(&world, &player, &ms);
 
@@ -211,7 +214,7 @@ int main(){
                     pause_game(&ks, &running_screen);
 
                     //PLAYER MOVES LEFT====================================================================================
-                    player.move(&world, &player, &ks, &ms);
+                    player.move(&world, &player, &ks, &ms, running_screen);
 
                     //AIM ADJUSTMENT====================================================================================
                     player.aim_adjust(&player, &ks);
@@ -237,9 +240,52 @@ int main(){
 
                     player_to_enemy_damage(&world, &player, weapon, &horde);
                     enemy_to_player_damage(&world, &player, weapon, &horde, &running_screen);
+
+                    if(horde.enemies_remaining == 0){
+                        running_screen == GAME_BOSS_STATE;
+                    }
             
                     redraw = true; // set to be redrawn
                 }
+
+                else if(running_screen == GAME_BOSS_STATE){
+                    al_get_keyboard_state(&ks);
+                    al_get_mouse_state(&ms);
+                    // RESETA ALTERAÇOES TEMPORARIAS
+                    boss.rgb[0] = 255;
+                    boss.rgb[1] = 255;
+                    boss.rgb[2] = 255;
+                    player.direction = RIGHT;
+                    reset_info(&world, &player, &ms);
+
+                    //OPENS MENU ON "ESC"====================================================================================
+                    pause_game(&ks, &running_screen);
+
+                    //PLAYER MOVES LEFT====================================================================================
+                    player.move(&world, &player, &ks, &ms, running_screen);
+
+                    //AIM ADJUSTMENT====================================================================================
+                    //player.aim_adjust(&player, &ks);
+
+                    //SHOOTER LOGIC====================================================================================
+    
+                    player.shoot(&world, &player, weapon, backup, &ks, &ms);
+
+                    //PLAYER COLOR and LEVEL FLOOR======================================================================================
+
+                    //player.state(&world, &player);
+
+                    //BOSS STUFF===============================================================================================
+
+                    //update_enemy_pos(world, &horde);
+                    //enemy_logic(world, player, &horde);
+
+                    player_to_boss_damage(world, &boss, weapon);
+                    //enemy_to_player_damage(&world, &player, weapon, &horde, &running_screen);
+            
+                    redraw = true; // set to be redrawn
+                }
+                
                 
                 break;
 
@@ -284,6 +330,56 @@ int main(){
 
             //GAME SCREEN
             if(running_screen ==  GAME){
+
+                player.sprite_off_y = 64;
+
+            
+                al_clear_to_color(al_map_rgb(57, 159, 251));
+
+                //bkg
+                al_draw_scaled_bitmap(world.bkg, world.bkg_off_x, 0, ((world.bkg_img_og_height * world.screen_width)/world.screen_height), world.bkg_img_og_height, 0, 0, world.screen_width, world.screen_height, 0);
+            
+
+                //STAMINA BAR
+                al_draw_filled_rectangle(20, 50, (5 * MAX_STAMINA) + 20, 60, al_map_rgb(255, 0, 0));
+                if(player.stamina == 0){
+                    al_draw_filled_rectangle(20, 50, (5 * player.stamina_recount) + 20, 60, al_map_rgb(71, 21, 22));
+                }
+                else{
+                    al_draw_filled_rectangle(20, 50, (5 * player.stamina_recount) + 20, 60, al_map_rgb(26, 255, 0));
+                }
+                
+        
+                //LIFE
+                for(int  i = 0; i < MAX_LIFE; i++){  //HEART CONTAINERS
+                    al_draw_tinted_scaled_bitmap(player.heart, al_map_rgb(71, 21, 22), 0, 0, 32, 32, (i*30)+20, 10, 30, 30, 0);
+                }
+
+                for(int  i = 0; i < player.life; i++){ // ACTUAL HEARTS
+                    al_draw_scaled_bitmap(player.heart, 0, 0, 32, 32, (i*30)+20, 10, 30, 30, 0);
+                }
+                
+                //projectile
+                draw_bullet(weapon);
+
+                                          
+                //player
+                al_draw_tinted_scaled_bitmap(player.sprite, al_map_rgb(player.rgb[0], player.rgb[1], player.rgb[2]), player.sprite_off_x, player.sprite_off_y, player.og_dimensions, player.og_dimensions, player.x, player.y, player.dimensions, player.dimensions, 0);
+                
+                //ENEMIES
+                for(int i = 0; i < ENEMY_AMT; i++){
+                    if(horde.enemy[i].state == ALIVE){
+                        al_draw_tinted_scaled_bitmap(horde.enemy_sprite, al_map_rgb(horde.enemy[i].rgb[0], horde.enemy[i].rgb[1], horde.enemy[i].rgb[2]), horde.enemy[i].sprite_off_x, horde.enemy[i].sprite_off_y, player.og_dimensions, player.og_dimensions, horde.enemy[i].x, horde.enemy[i].y, player.dimensions, player.dimensions, 0);
+                        //if(horde.enemy[i].bullet.shoot){
+                            //al_draw_scaled_bitmap(enemy_tama, 0, 0, 32, 32, horde.enemy[i].bullet.x, horde.enemy[i].bullet.y, 32, 32, 0);
+                        //}
+                    }
+                   
+                }
+
+            }
+
+            if(running_screen ==  GAME_BOSS_STATE){
                 if(player.direction == RIGHT){
                     player.sprite_off_y = 64;
                 }
@@ -323,15 +419,8 @@ int main(){
                 //player
                 al_draw_tinted_scaled_bitmap(player.sprite, al_map_rgb(player.rgb[0], player.rgb[1], player.rgb[2]), player.sprite_off_x, player.sprite_off_y, player.og_dimensions, player.og_dimensions, player.x, player.y, player.dimensions, player.dimensions, 0);
                 
-                //ENEMIES
-                for(int i = 0; i < ENEMY_AMT; i++){
-                    if(horde.enemy[i].state == ALIVE){
-                        al_draw_tinted_scaled_bitmap(horde.enemy_sprite, al_map_rgb(horde.enemy[i].rgb[0], horde.enemy[i].rgb[1], horde.enemy[i].rgb[2]), horde.enemy[i].sprite_off_x, horde.enemy[i].sprite_off_y, player.og_dimensions, player.og_dimensions, horde.enemy[i].x, horde.enemy[i].y, player.dimensions, player.dimensions, 0);
-                        if(horde.enemy[i].bullet.shoot){
-                            al_draw_scaled_bitmap(enemy_tama, 0, 0, 32, 32, horde.enemy[i].bullet.x, horde.enemy[i].bullet.y, 32, 32, 0);
-                        }
-                    }
-                   
+                if(boss.life > 0){
+                    al_draw_tinted_scaled_bitmap(boss.enemy_sprite, al_map_rgb(boss.rgb[0],boss.rgb[1],boss.rgb[2]), 0, 0, player.og_dimensions, player.og_dimensions, world.screen_width - 192, 0, 128, world.screen_height, 0);
                 }
 
             }
