@@ -1,5 +1,5 @@
 CC = gcc 
-objs = hello.o player.o weapon.o # (...)add more libraries here
+objs = hello.o game.o weapon.o enemy.o # (...)add more libraries here
 
 LIB = $(shell pkg-config allegro-5 allegro_font-5 allegro_image-5 allegro_primitives-5 --libs --cflags)
  
@@ -10,8 +10,9 @@ vina: $(objs)
  
 # regras de compilação
 hello.o:   hello.c
-player.o: player.c player.h
+game.o: game.c game.h
 weapon.o: weapon.c weapon.h
+enemy.o: enemy.c enemy.h
 # (...) add more libraries here
  
 clean:

@@ -4,13 +4,13 @@
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_primitives.h>
-#include "player.h"
+#include "game.h"
 #include "weapon.h"
+#include "enemy.h"
 
 #define MENU 0
 #define GAME 1
 #define GAME_OVER 2
-#define END 3
 
 void must_init(bool test, const char *description)
 {
@@ -110,6 +110,13 @@ int main(){
     must_init(weapon->projectile, "projectile");
     al_convert_mask_to_alpha(weapon->projectile, al_map_rgb(26, 255, 0));
 
+    //ENEMY RULES======================================================================================================
+    struct horde horde;
+    initialize_enemy_info(world, &horde);
+    horde.enemy_sprite = al_load_bitmap("assets/enemy.png");
+    must_init(horde.enemy_sprite, "enemy");
+    al_convert_mask_to_alpha(horde.enemy_sprite, al_map_rgb(26, 255, 0));
+
     must_init(al_init_primitives_addon(), "primitives");
     al_register_event_source(queue, al_get_keyboard_event_source());
     al_register_event_source(queue, al_get_display_event_source(disp));
@@ -146,6 +153,7 @@ int main(){
                         }
                         else{
                             running_screen = GAME;
+                            world.counter = 0;
                         }
                     }
 
@@ -168,10 +176,63 @@ int main(){
                     redraw = true;
                 }
 
+                else if(running_screen == GAME_OVER){
+                    al_get_keyboard_state(&ks);
+                    al_get_mouse_state(&ms);
+
+                    button_width_leave = 200;
+                    button_height_leave = 67;
+
+                    if((ms.x >= ((world.screen_width/2) - 100) && ms.x <= ((world.screen_width/2) + 100) && ms.y >= 500 && ms.y <= 567)){
+                        if(!al_mouse_button_down(&ms, 1)){
+                            button_width_leave = 220;
+                            button_height_leave = 73;
+                        }
+                        else{
+                            done = true;
+                            break;
+                        }
+                    }
+
+                    redraw = true;
+                }
+
                 else if(running_screen == GAME){
                     al_get_keyboard_state(&ks);
                     al_get_mouse_state(&ms);
-                    game_logic(&world, &player, weapon, backup, &ks, &ms, &running_screen, &og_floor);  //LOGICA PRINCIPAL DO JOGO;
+                    // RESETA ALTERAÇOES TEMPORARIAS
+                    reset_info(&world, &player, &ms);
+
+                    //OPENS MENU ON "ESC"====================================================================================
+                    pause_game(&ks, &running_screen);
+
+                    //PLAYER MOVES LEFT====================================================================================
+                    player.move(&world, &player, &ks, &ms);
+
+                    //AIM ADJUSTMENT====================================================================================
+                    player.aim_adjust(&player, &ks);
+
+                    //PLAYER JUMPS====================================================================================
+                    player.jump(&world, &player, &ks, &og_floor);
+
+                    //PLAYER DUCK======================================================================================
+                    player.duck(&player, &ks);
+
+                    //SHOOTER LOGIC====================================================================================
+    
+                    player.shoot(&world, &player, weapon, backup, &ks, &ms);
+
+                    //PLAYER COLOR and LEVEL FLOOR======================================================================================
+
+                    player.state(&world, &player);
+
+                    //ENEMY STUFF===============================================================================================
+
+                    update_enemy_pos(world, &horde);
+                    //enemy_logic(world, player, &horde);
+
+                    player_to_enemy_damage(&world, &player, weapon, &horde);
+                    enemy_to_player_damage(&world, &player, weapon, &horde, &running_screen);
             
                     redraw = true; // set to be redrawn
                 }
@@ -203,6 +264,20 @@ int main(){
                 
             }
 
+            //GAME_OVER SCREEN
+            if(running_screen ==  GAME_OVER){
+                al_clear_to_color(al_map_rgb(255, 255, 255));
+
+                al_draw_scaled_bitmap(bkg_menu, 0, 0, 1280, 720, 0, 0, world.screen_width, world.screen_height, 0);
+                
+                al_draw_text(font, al_map_rgb(255, 255, 255), world.screen_width - 320, world.screen_height - 12, 0, "Ken no subarashii sabaku taikai - V0.5");
+
+                al_draw_scaled_bitmap(leave_bt, 0, 0, 120, 40, (world.screen_width/2) - (button_width_leave/2), 500, button_width_leave, button_height_leave, 0);
+
+                al_draw_scaled_bitmap(main_title, 0, 0, 448, 256, (world.screen_width/2) - 250, (world.screen_width/2) - 550, 500, 286, 0);
+                
+            }
+
             //GAME SCREEN
             if(running_screen ==  GAME){
                 if(player.direction == RIGHT){
@@ -220,17 +295,20 @@ int main(){
 
                 //STAMINA BAR
                 al_draw_filled_rectangle(20, 50, (5 * MAX_STAMINA) + 20, 60, al_map_rgb(255, 0, 0));
-                al_draw_filled_rectangle(20, 50, (5 * player.stamina_recount) + 20, 60, al_map_rgb(26, 255, 0));
+                if(player.stamina == 0){
+                    al_draw_filled_rectangle(20, 50, (5 * player.stamina_recount) + 20, 60, al_map_rgb(71, 21, 22));
+                }
+                else{
+                    al_draw_filled_rectangle(20, 50, (5 * player.stamina_recount) + 20, 60, al_map_rgb(26, 255, 0));
+                }
+                
         
                 //LIFE
                 for(int  i = 0; i < MAX_LIFE; i++){  //HEART CONTAINERS
-                    al_draw_tinted_scaled_bitmap(player.heart, al_map_rgb(100, 100, 100), 0, 0, 32, 32, (i*30)+20, 10, 30, 30, 0);
+                    al_draw_tinted_scaled_bitmap(player.heart, al_map_rgb(71, 21, 22), 0, 0, 32, 32, (i*30)+20, 10, 30, 30, 0);
                 }
 
-                for(int  i = 0; i < MAX_LIFE; i++){ // ACTUAL HEARTS
-                    if(!player.life[i]){
-                        break;
-                    }
+                for(int  i = 0; i < player.life; i++){ // ACTUAL HEARTS
                     al_draw_scaled_bitmap(player.heart, 0, 0, 32, 32, (i*30)+20, 10, 30, 30, 0);
                 }
                 
@@ -240,7 +318,15 @@ int main(){
                                           
                 //player
                 al_draw_tinted_scaled_bitmap(player.sprite, al_map_rgb(player.rgb[0], player.rgb[1], player.rgb[2]), player.sprite_off_x, player.sprite_off_y, player.og_dimensions, player.og_dimensions, player.x, player.y, player.dimensions, player.dimensions, 0);
-            
+                
+                //ENEMIES
+                for(int i = 0; i < ENEMY_AMT; i++){
+                    if(horde.enemy[i].state == ALIVE){
+                        al_draw_tinted_scaled_bitmap(horde.enemy_sprite, al_map_rgb(horde.enemy[i].rgb[0], horde.enemy[i].rgb[1], horde.enemy[i].rgb[2]), horde.enemy[i].sprite_off_x, horde.enemy[i].sprite_off_y, player.og_dimensions, player.og_dimensions, horde.enemy[i].x, horde.enemy[i].y, player.dimensions, player.dimensions, 0);
+
+                    }
+                   
+                }
 
             }
             

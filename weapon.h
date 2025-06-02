@@ -1,5 +1,5 @@
-#ifndef __weapon_H__
-#define __weapon_H__
+#ifndef __WEAPON_H__
+#define __WEAPON_H__
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,7 +7,7 @@
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_primitives.h>
-#include "player.h"
+#include "game.h"
 
 struct player;
 
@@ -20,6 +20,7 @@ struct projectile{
     int speed_x;
     int speed_y;
     int timer;
+    bool shoot;;
 };
 
 struct bullet{

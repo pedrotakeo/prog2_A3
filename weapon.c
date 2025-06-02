@@ -4,7 +4,7 @@
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_primitives.h>
-#include "player.h"
+#include "game.h"
 #include "weapon.h"
 
 
@@ -38,6 +38,7 @@ struct bullet* create_projectile(struct weapon *weapon, struct player player){
     new->next = NULL;
     new->prev = NULL;
     new->info.timer = 0;
+    new->info.shoot = true;
 
     return new;
 }
@@ -73,6 +74,18 @@ int load_weapon(struct weapon *weapon, struct bullet *new, struct player player)
         case LUP:
             new->info.speed_x = -40;
             new->info.speed_y = -40;
+            break;
+        case DOWN:
+            new->info.speed_x = 0;
+            new->info.speed_y = 40;
+            break;
+        case RDOWN:
+            new->info.speed_x = 40;
+            new->info.speed_y = 40;
+            break;
+        case LDOWN:
+            new->info.speed_x = -40;
+            new->info.speed_y = 40;
             break;
         default:
             new->info.speed_x = 0;
