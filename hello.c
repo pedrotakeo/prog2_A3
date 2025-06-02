@@ -117,6 +117,10 @@ int main(){
     must_init(horde.enemy_sprite, "enemy");
     al_convert_mask_to_alpha(horde.enemy_sprite, al_map_rgb(26, 255, 0));
 
+    ALLEGRO_BITMAP* enemy_tama = al_load_bitmap("assets/proj_enemy.png");
+    must_init(enemy_tama, "enemy_proj"); 
+    al_convert_mask_to_alpha(enemy_tama, al_map_rgb(26, 255, 0));
+
     must_init(al_init_primitives_addon(), "primitives");
     al_register_event_source(queue, al_get_keyboard_event_source());
     al_register_event_source(queue, al_get_display_event_source(disp));
@@ -229,7 +233,7 @@ int main(){
                     //ENEMY STUFF===============================================================================================
 
                     update_enemy_pos(world, &horde);
-                    //enemy_logic(world, player, &horde);
+                    enemy_logic(world, player, &horde);
 
                     player_to_enemy_damage(&world, &player, weapon, &horde);
                     enemy_to_player_damage(&world, &player, weapon, &horde, &running_screen);
@@ -323,7 +327,9 @@ int main(){
                 for(int i = 0; i < ENEMY_AMT; i++){
                     if(horde.enemy[i].state == ALIVE){
                         al_draw_tinted_scaled_bitmap(horde.enemy_sprite, al_map_rgb(horde.enemy[i].rgb[0], horde.enemy[i].rgb[1], horde.enemy[i].rgb[2]), horde.enemy[i].sprite_off_x, horde.enemy[i].sprite_off_y, player.og_dimensions, player.og_dimensions, horde.enemy[i].x, horde.enemy[i].y, player.dimensions, player.dimensions, 0);
-
+                        if(horde.enemy[i].bullet.shoot){
+                            al_draw_scaled_bitmap(enemy_tama, 0, 0, 32, 32, horde.enemy[i].bullet.x, horde.enemy[i].bullet.y, 32, 32, 0);
+                        }
                     }
                    
                 }

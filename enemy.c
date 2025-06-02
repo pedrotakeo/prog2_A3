@@ -22,8 +22,8 @@ void initialize_enemy_info(struct environment world, struct horde* horde){
         horde->enemy[i].bullet.speed_x = 40;
         horde->enemy[i].bullet.speed_y = 0;
         horde->enemy[i].bullet.timer = 0;
-        horde->enemy[i].bullet.x = 0;
-        horde->enemy[i].bullet.y = 0;
+        horde->enemy[i].bullet.x = 6000;
+        horde->enemy[i].bullet.y = 800;
         horde->enemy[i].target_pos = 0;
         horde->enemy[i].player_pos = 0;
         horde->enemy[i].rgb[0] = 255;
@@ -92,80 +92,103 @@ void initialize_enemy_info(struct environment world, struct horde* horde){
 
 
 void round_0_enemy(struct environment world, struct player player, struct enemy* enemy){
-    if(enemy->round == 0){
+
+    enemy->sprite_off_x = 64;
+    if(world.counter % 2){
+        enemy->sprite_off_x = 128;
+    }
+
+    if(enemy->direction == LEFT){
+        enemy->sprite_off_y = 0;
+    }
+    else{
+        enemy->sprite_off_y = 64;
+    }
+
+
+    if(enemy->round == 0 && player.universal_x > enemy->parameter_left && player.universal_x < enemy->parameter_right){
         enemy->player_pos = player.universal_x;
         enemy->round = 1;
     }
 
-    enemy->target_pos = enemy->player_pos + 64;
-    if(enemy->target_pos > 5660){
-        enemy->target_pos = 5660;
-    }
-
-
-    if(enemy->universal_x < player.universal_x){
-        enemy->target_pos = enemy->player_pos - 64;
-        if(enemy->target_pos < 100){
-            enemy->target_pos = 100;
-        }
+    enemy->target_pos = enemy->player_pos + 10;
+    if(enemy->universal_x < enemy->player_pos){
+        enemy->target_pos = enemy->player_pos - 10;
     }
 
 }
 
 void round_1_enemy (struct environment world , struct enemy* enemy){
+
     if(enemy->round != 1){
         return;
     }
-
-
-    if(enemy->universal_x > enemy->target_pos && enemy->universal_x > enemy->parameter_left){  //SET DIRECTION TO WALK IN
+    
+    if(enemy->target_pos < enemy->universal_x && enemy->target_pos >= enemy->parameter_left){
         enemy->direction = LEFT;
         enemy->x -= 10;
-        if(enemy->universal_x <= enemy->parameter_right){
-            enemy->universal_x = enemy->parameter_right;
-            enemy->x - enemy->universal_x - world.screen_limit_L;
-            enemy->round = 2;
+        enemy->universal_x = world.screen_limit_L + enemy->x;
+
+
+        if(enemy->universal_x < enemy->target_pos){
+            enemy->universal_x = enemy->target_pos;
+            enemy->x = enemy->target_pos -  world.screen_limit_L;
+
         }
 
-        if(enemy->universal_x <= enemy->target_pos){
-            enemy->universal_x = enemy->target_pos;
-            enemy->x - enemy->universal_x - world.screen_limit_L;
-            enemy->round = 2;
-            return;
+        if(enemy->universal_x < enemy->parameter_left && enemy->y == (world.screen_height/2 )- 135){
+            enemy->universal_x = enemy->parameter_left;
+            enemy->x = enemy->parameter_left -  world.screen_limit_L;
+
         }
-        return;
+
     }
 
-    if(enemy->universal_x < enemy->target_pos && enemy->universal_x < enemy->parameter_right){
+    if(enemy->target_pos > enemy->universal_x && enemy->target_pos <= enemy->parameter_right){
         enemy->direction = RIGHT;
         enemy->x += 10;
-        if(enemy->universal_x >= enemy->parameter_right){
-            enemy->universal_x = enemy->parameter_right;
-            enemy->x - enemy->universal_x - world.screen_limit_L;
-            enemy->round = 2;
+        enemy->universal_x = world.screen_limit_L + enemy->x;
+
+
+        if(enemy->universal_x > enemy->target_pos){
+            enemy->universal_x = enemy->target_pos;
+            enemy->x = enemy->target_pos -  world.screen_limit_L;
         }
 
-        if(enemy->universal_x >= enemy->target_pos){
-            enemy->universal_x = enemy->target_pos;
-            enemy->x - enemy->universal_x - world.screen_limit_L;
-            enemy->round = 2;
-            return;
+        if(enemy->universal_x > enemy->parameter_right && enemy->y == (world.screen_height/2 )- 135){
+            enemy->universal_x = enemy->parameter_right;
+            enemy->x = enemy->parameter_right -  world.screen_limit_L;
+
         }
+
     }
 
+    enemy->bullet.x += enemy->bullet.speed_x;
+
     if(enemy->universal_x == enemy->target_pos){    //IF IN POSITION DONE
-        enemy->round = 2;
+        if(enemy->direction == RIGHT){
+            enemy->bullet.speed_x = 20;
+        }
+        else{
+            enemy->bullet.speed_x = -20;
+        }
+
+        enemy->bullet.x = enemy->x + 15;
+        enemy->bullet.y = enemy->y + 40;
+
+        enemy->round = 0;
+        enemy->timer = 0;
         return;
     }
 
 }
 
-void round_2_enemy(struct environment world, struct player player, struct enemy* enemy){
+/*void round_2_enemy(struct environment world, struct player player, struct enemy* enemy){
     if(enemy->round != 2){
         return;
     }
 
-    if(enemy->timer = 100){
+    if(enemy->timer = 10000){
         enemy->timer = 0;
         enemy->round = 0;
         return;
@@ -199,14 +222,18 @@ void round_2_enemy(struct environment world, struct player player, struct enemy*
 
 
     enemy->timer++;
-}
+}*/
 
 void enemy_logic(struct environment world, struct player player, struct horde *horde){
     for(int i = 0; i < ENEMY_AMT; i++){
-        if(horde->enemy[i].state == ALIVE && horde->enemy[i].universal_x > world.screen_limit_L &&  horde->enemy[i].universal_x < world.screen_limit_R){ //if alive and within bounds
+        if(horde->enemy[i].state == ALIVE && horde->enemy[i].universal_x + 64 > world.screen_limit_L &&  horde->enemy[i].universal_x < world.screen_limit_R){ //if alive and within bounds
             round_0_enemy(world, player, &horde->enemy[i]);
             round_1_enemy(world, &horde->enemy[i]);
-            round_2_enemy(world, player, &horde->enemy[i]);
+            horde->enemy[i].bullet.shoot = true;
+
+        }
+        else{
+            horde->enemy[i].bullet.shoot = false;
         }
     }
 
