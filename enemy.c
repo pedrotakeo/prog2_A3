@@ -90,15 +90,106 @@ void initialize_enemy_info(struct environment world, struct horde* horde){
 
 }
 
-void initialize_boss_info(struct boss *boss){
+void initialize_boss_info(struct boss *boss, struct environment world){
     boss->life = 10 * MAX_LIFE;
     boss->timer = 0;
+    boss->direction = DOWN;
     boss->rgb[0] = 255;
     boss->rgb[1] = 255;
     boss->rgb[2] = 255;
     boss->y = 0;
+
+    //attack info:
+    //FIRST ATTACK |--  |
+    boss->attack[0].appear = 0;
+    boss->attack[0].speed = 10;
+    boss->attack[0].timer = 0;
+    boss->attack[0].x = world.screen_width;
+    boss->attack[0].y = 0;
+    boss->attack[0].width = 50;
+    boss->attack[0].height = world.screen_height/2;
+
+    //SECOND ATTACK |  --|
+    boss->attack[1].appear = 0;
+    boss->attack[1].speed = 10;
+    boss->attack[1].timer = 0;
+    boss->attack[1].x = world.screen_width;
+    boss->attack[1].y = world.screen_height/2;
+    boss->attack[1].width = 50;
+    boss->attack[1].height = world.screen_height/2;
+
+    //THIRD ATTACK |-  -|
+    boss->attack[2].appear = 0;
+    boss->attack[2].speed = 10;
+    boss->attack[2].timer = 0;
+    boss->attack[2].x = world.screen_width;
+    boss->attack[2].y = 0;
+    boss->attack[2].width = 50;
+    boss->attack[2].height = world.screen_height/4;
+
+    boss->attack[3].appear = 0;
+    boss->attack[3].speed = 10;
+    boss->attack[3].timer = 0;
+    boss->attack[3].x = world.screen_width;
+    boss->attack[3].y = 3 * (world.screen_height/4);
+    boss->attack[3].width = 50;
+    boss->attack[3].height = world.screen_height/4;
 }
 
+void boss_attack_logic(struct boss *boss, struct environment world){
+    boss->attack[0].timer++;
+    boss->attack[1].timer++;
+    boss->attack[2].timer++;
+    boss->attack[3].timer++;
+
+    //ATTACK 1
+    if(boss->attack[0].timer > 60){
+        boss->attack[0].appear = 1; 
+        boss->attack[0].x -= boss->attack[0].speed;
+    }
+    if((boss->attack[0].x + boss->attack[0].width) < 0){
+        boss->attack[0].appear = 0; 
+        boss->attack[0].x = world.screen_width - 128;
+
+    }
+
+    //ATTACK 2
+    if(boss->attack[1].timer > 120){
+        boss->attack[1].appear = 1; 
+        boss->attack[1].x -= boss->attack[1].speed;
+    }
+    if((boss->attack[1].x + boss->attack[1].width) < 0){
+        boss->attack[1].appear = 0; 
+        boss->attack[1].x = world.screen_width - 128;
+
+    }
+
+    if(boss->attack[3].timer == 0){
+        boss->attack[0].timer = 0;
+        boss->attack[1].timer = 0;
+    }
+
+    //ATTACK 3
+    if(boss->attack[2].timer > 180){
+        boss->attack[2].appear = 1; 
+        boss->attack[2].x -= boss->attack[2].speed;
+    }
+    if((boss->attack[2].x + boss->attack[2].width) < 0){
+        boss->attack[2].appear = 0; 
+        boss->attack[2].x = world.screen_width - 128;
+        boss->attack[2].timer = 0;
+    }
+
+    if(boss->attack[3].timer > 180){
+        boss->attack[3].appear = 1; 
+        boss->attack[3].x -= boss->attack[2].speed;
+    }
+    if((boss->attack[3].x + boss->attack[2].width) < 0){
+        boss->attack[3].appear = 0; 
+        boss->attack[2].x = world.screen_width - 128;
+        boss->attack[2].timer = 0;
+    }
+}
 
 void round_0_enemy(struct environment world, struct player player, struct enemy* enemy){
 

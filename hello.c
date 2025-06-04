@@ -118,7 +118,7 @@ int main(){
     al_convert_mask_to_alpha(horde.enemy_sprite, al_map_rgb(26, 255, 0));
 
     struct boss boss;
-    initialize_boss_info(&boss);
+    initialize_boss_info(&boss, world);
     boss.enemy_sprite = al_load_bitmap("assets/boss.png");
     must_init(boss.enemy_sprite, "boss");
     al_convert_mask_to_alpha(boss.enemy_sprite, al_map_rgb(26, 255, 0));
@@ -262,7 +262,7 @@ int main(){
                     enemy_logic(world, player, &horde);
 
                     player_to_enemy_damage(&world, &player, weapon, &horde);
-                    enemy_to_player_damage(&world, &player, weapon, &horde, &running_screen);
+                    enemy_to_player_damage(&world, &player, &horde, &running_screen);
 
                     if(horde.enemies_remaining == 0 || al_key_down(&ks, ALLEGRO_KEY_B)){
                         player.aim = RIGHT;
@@ -273,6 +273,8 @@ int main(){
                         boss.rgb[0] = 255;
                         boss.rgb[1] = 255;
                         boss.rgb[2] = 255;
+
+                        boss.timer = 0;
                     }
             
                     redraw = true; // set to be redrawn
@@ -285,32 +287,30 @@ int main(){
                     boss.rgb[0] = 255;
                     boss.rgb[1] = 255;
                     boss.rgb[2] = 255;
-                    
-                    boss.timer++;
 
-                    switch(boss.timer){
-                        case 10:
-                            boss.y = 50;
-                            break;
-                        case 20:
-                            boss.y = 100;
-                            break;
-                        case 30:
-                            boss.y = 150;
-                            break;
-                        case 40:
-                            boss.y = 100;
-                            break;
-                        case 50:
-                            boss.y = 50;
-                            break;
-                        case 60:
-                            boss.y = 0;
-                            boss.timer = 0;
-                            break;
+            
+                    if(boss.direction == DOWN){
+                        boss.timer++;
                     }
+                    else{
+                        boss.timer--;
+                    }
+                                  
+                    if(boss.timer < 0){
+                        boss.direction = DOWN;
+                        boss.timer = 0;
+                    }
+                    if(boss.timer > 30){
+                        boss.direction = UP;
+                        boss.timer = 30;
+                    }
+
+
+                    
                     
                     if(world.counter > 120){
+                        boss_attack_logic(&boss, world);
+
                         reset_info(&world, &player, &ms);
 
                         //OPENS MENU ON "ESC"====================================================================================
@@ -327,7 +327,7 @@ int main(){
                         //BOSS STUFF===============================================================================================
 
                         player_to_boss_damage(world, &boss, weapon);
-                        //enemy_to_player_damage(&world, &player, weapon, &horde, &running_screen);
+                        boss_to_player_damage(&world, &player, &boss, &running_screen);
                         if(boss.life == 0){
                             running_screen = GAME_OVER;
                         }
@@ -438,7 +438,7 @@ int main(){
                 player.sprite_off_y = 64;
                 player.sprite_off_x = 448;
                
-            
+                
                 al_clear_to_color(al_map_rgb(57, 159, 251));
 
                 //bkg
@@ -471,8 +471,16 @@ int main(){
                 //player
                 al_draw_tinted_scaled_bitmap(player.sprite, al_map_rgb(player.rgb[0], player.rgb[1], player.rgb[2]), player.sprite_off_x, player.sprite_off_y, player.og_dimensions, player.og_dimensions, player.x, player.y, player.dimensions, player.dimensions, 0);
                 
+                //BOSS_ATTACKS
+                for(int i = 0; i < 4; i++){
+                    if(boss.attack[i].appear){
+                        al_draw_filled_rectangle(boss.attack[i].x, boss.attack[i].y, (boss.attack[i].x + boss.attack[i].width), (boss.attack[i].y + boss.attack[i].height), al_map_rgb(255, 255, 255));
+                    }
+                }
+                
+                //BOSS
                 if(boss.life > 0){
-                    al_draw_tinted_scaled_bitmap(boss.enemy_sprite, al_map_rgb(boss.rgb[0],boss.rgb[1],boss.rgb[2]), 0, 0, 64, 256, world.screen_width - 192, boss.y, 128, 4*128, 0);
+                    al_draw_tinted_scaled_bitmap(boss.enemy_sprite, al_map_rgb(boss.rgb[0],boss.rgb[1],boss.rgb[2]), 0, 0, 64, 256, world.screen_width - 192, (boss.timer * 7), 128, 4*128, 0);
                 }
 
                 if(world.counter < 30){
@@ -507,7 +515,6 @@ int main(){
         world.counter++;
 
     }
-
     weapon = destroy_weapon(weapon);
     backup = destroy_weapon(backup);
     al_destroy_bitmap(world.bkg);

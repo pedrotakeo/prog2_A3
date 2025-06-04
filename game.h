@@ -104,9 +104,12 @@ void determine_universal_screen_limits(struct environment *world);
 
 void player_to_enemy_damage(struct environment *world, struct player *player, struct weapon *weapon, struct horde *horde);
 
-void enemy_to_player_damage(struct environment *world, struct player *player, struct weapon *weapon, struct horde *horde, int *running_screen);
+void enemy_to_player_damage(struct environment *world, struct player *player, struct horde *horde, int *running_screen);
 
 void player_to_boss_damage(struct environment world, struct boss *boss, struct weapon *weapon);
+
+void boss_to_player_damage(struct environment *world, struct player *player, struct boss *boss, int *running_screen);
+
 
 
 //PLAYER STUFF

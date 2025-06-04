@@ -361,7 +361,7 @@ void player_to_enemy_damage(struct environment *world, struct player *player, st
     }
 }
 
-void enemy_to_player_damage(struct environment *world, struct player *player, struct weapon *weapon, struct horde *horde, int *running_screen){
+void enemy_to_player_damage(struct environment *world, struct player *player, struct horde *horde, int *running_screen){
     if(player->damage_cooldown > 0){
         player->damage_cooldown--;
         if(player->damage_cooldown % 3){
@@ -412,4 +412,48 @@ void player_to_boss_damage(struct environment world, struct boss *boss, struct w
 
         aux = temp;
     }
+}
+
+void boss_to_player_damage(struct environment *world, struct player *player, struct boss *boss, int *running_screen){
+    if(player->damage_cooldown > 0){
+        player->damage_cooldown--;
+        if(player->damage_cooldown % 4){
+            player->rgb[0] = 255;
+            player->rgb[1] = 0;
+            player->rgb[2] = 0;
+        }
+        return;
+    }
+
+    if((player->x + 64) > (world->screen_width - 192)){
+        player->damage_cooldown = 12;
+        player->life--;
+        player->rgb[0] = 255;
+        player->rgb[1] = 0;
+        player->rgb[2] = 0;
+        if(!player->life){
+            *running_screen = 2;
+        }
+    }
+
+    /*for(int i = 0; i < ENEMY_AMT; i++){
+        bool touch1 = player->x + 64 >= horde->enemy[i].x && player->x + 64 <= horde->enemy[i].x + 64 && player->y + 64 >= horde->enemy[i].y && player->y + 64 <= horde->enemy[i].y + 64;
+        bool touch2 = player->x >= horde->enemy[i].x && player->x <= horde->enemy[i].x + 64 && player->y >= horde->enemy[i].y && player->y <= horde->enemy[i].y + 64;;
+
+        if(horde->enemy[i].state == ALIVE && horde->enemy[i].universal_x > world->screen_limit_L &&  horde->enemy[i].universal_x < world->screen_limit_R){ //if alive and within bounds
+            if (touch1 || touch2){
+                player->damage_cooldown = 12;
+                player->life--;
+                player->rgb[0] = 255;
+                player->rgb[1] = 0;
+                player->rgb[2] = 0;
+                if(!player->life){
+                    *running_screen = 2;
+                }
+
+            }
+
+
+        }
+    }*/
 }
