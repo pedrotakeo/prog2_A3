@@ -57,8 +57,12 @@ int main(){
     al_convert_mask_to_alpha(leave_bt, al_map_rgb(78, 255, 0));
 
     ALLEGRO_BITMAP* main_title = al_load_bitmap("assets/main_title.png");
-    must_init(main_title, "leave"); 
+    must_init(main_title, "maintitle"); 
     al_convert_mask_to_alpha(main_title, al_map_rgb(26, 255, 0));
+
+    ALLEGRO_BITMAP* game_over = al_load_bitmap("assets/game_over.png");
+    must_init(game_over, "game_over"); 
+    al_convert_mask_to_alpha(game_over, al_map_rgb(26, 255, 0));
 
 
 
@@ -115,9 +119,32 @@ int main(){
 
     struct boss boss;
     initialize_boss_info(&boss);
-    boss.enemy_sprite = al_load_bitmap("assets/enemy.png");
+    boss.enemy_sprite = al_load_bitmap("assets/boss.png");
     must_init(boss.enemy_sprite, "boss");
     al_convert_mask_to_alpha(boss.enemy_sprite, al_map_rgb(26, 255, 0));
+
+    ALLEGRO_BITMAP* bkg_boss = al_load_bitmap("assets/bkg_boss.png");
+    must_init(bkg_boss, "bkg_boss"); 
+
+    ALLEGRO_BITMAP* bosstxt = al_load_bitmap("assets/bosstxt.png");
+    must_init(bosstxt, "bosstxt"); 
+    al_convert_mask_to_alpha(bosstxt, al_map_rgb(26, 255, 0));
+
+    ALLEGRO_BITMAP* t3 = al_load_bitmap("assets/t3.png");
+    must_init(t3, "t3"); 
+    al_convert_mask_to_alpha(t3, al_map_rgb(26, 255, 0));
+
+    ALLEGRO_BITMAP* t2 = al_load_bitmap("assets/t2.png");
+    must_init(t2, "t2"); 
+    al_convert_mask_to_alpha(t2, al_map_rgb(26, 255, 0));
+
+    ALLEGRO_BITMAP* t1 = al_load_bitmap("assets/t1.png");
+    must_init(t1, "t1"); 
+    al_convert_mask_to_alpha(t1, al_map_rgb(26, 255, 0));
+
+    ALLEGRO_BITMAP* go = al_load_bitmap("assets/go.png");
+    must_init(go, "go"); 
+    al_convert_mask_to_alpha(go, al_map_rgb(26, 255, 0));
 
     must_init(al_init_primitives_addon(), "primitives");
     al_register_event_source(queue, al_get_keyboard_event_source());
@@ -203,10 +230,6 @@ int main(){
                     al_get_keyboard_state(&ks);
                     al_get_mouse_state(&ms);
 
-                    if(al_key_down(&ks, ALLEGRO_KEY_B)){
-                        running_screen = GAME_BOSS_STATE;
-                        world.counter = 0;
-                    }
                     // RESETA ALTERAÇOES TEMPORARIAS
                     reset_info(&world, &player, &ms);
 
@@ -241,8 +264,15 @@ int main(){
                     player_to_enemy_damage(&world, &player, weapon, &horde);
                     enemy_to_player_damage(&world, &player, weapon, &horde, &running_screen);
 
-                    if(horde.enemies_remaining == 0){
-                        running_screen == GAME_BOSS_STATE;
+                    if(horde.enemies_remaining == 0 || al_key_down(&ks, ALLEGRO_KEY_B)){
+                        player.aim = RIGHT;
+                        running_screen = GAME_BOSS_STATE;
+                        player.x = 100;
+                        player.y = world.screen_height/2;
+                        world.counter = 0;
+                        boss.rgb[0] = 255;
+                        boss.rgb[1] = 255;
+                        boss.rgb[2] = 255;
                     }
             
                     redraw = true; // set to be redrawn
@@ -255,33 +285,54 @@ int main(){
                     boss.rgb[0] = 255;
                     boss.rgb[1] = 255;
                     boss.rgb[2] = 255;
-                    player.direction = RIGHT;
-                    reset_info(&world, &player, &ms);
+                    
+                    boss.timer++;
 
-                    //OPENS MENU ON "ESC"====================================================================================
-                    pause_game(&ks, &running_screen);
+                    switch(boss.timer){
+                        case 10:
+                            boss.y = 50;
+                            break;
+                        case 20:
+                            boss.y = 100;
+                            break;
+                        case 30:
+                            boss.y = 150;
+                            break;
+                        case 40:
+                            boss.y = 100;
+                            break;
+                        case 50:
+                            boss.y = 50;
+                            break;
+                        case 60:
+                            boss.y = 0;
+                            boss.timer = 0;
+                            break;
+                    }
+                    
+                    if(world.counter > 120){
+                        reset_info(&world, &player, &ms);
 
-                    //PLAYER MOVES LEFT====================================================================================
-                    player.move(&world, &player, &ks, &ms, running_screen);
+                        //OPENS MENU ON "ESC"====================================================================================
+                        pause_game(&ks, &running_screen);
 
-                    //AIM ADJUSTMENT====================================================================================
-                    //player.aim_adjust(&player, &ks);
+                        //PLAYER MOVES LEFT====================================================================================
+                        player.move(&world, &player, &ks, &ms, running_screen);
 
-                    //SHOOTER LOGIC====================================================================================
     
-                    player.shoot(&world, &player, weapon, backup, &ks, &ms);
+                        //SHOOTER LOGIC====================================================================================
 
-                    //PLAYER COLOR and LEVEL FLOOR======================================================================================
+                        player.shoot(&world, &player, weapon, backup, &ks, &ms);
 
-                    //player.state(&world, &player);
+                        //BOSS STUFF===============================================================================================
 
-                    //BOSS STUFF===============================================================================================
-
-                    //update_enemy_pos(world, &horde);
-                    //enemy_logic(world, player, &horde);
-
-                    player_to_boss_damage(world, &boss, weapon);
-                    //enemy_to_player_damage(&world, &player, weapon, &horde, &running_screen);
+                        player_to_boss_damage(world, &boss, weapon);
+                        //enemy_to_player_damage(&world, &player, weapon, &horde, &running_screen);
+                        if(boss.life == 0){
+                            running_screen = GAME_OVER;
+                        }
+                    }
+                    
             
                     redraw = true; // set to be redrawn
                 }
@@ -305,7 +356,7 @@ int main(){
 
                 al_draw_scaled_bitmap(bkg_menu, 0, 0, 1280, 720, 0, 0, world.screen_width, world.screen_height, 0);
                 
-                al_draw_text(font, al_map_rgb(255, 255, 255), world.screen_width - 320, world.screen_height - 12, 0, "Ken no subarashii sabaku taikai - V0.5");
+                al_draw_text(font, al_map_rgb(255, 255, 255), world.screen_width - 320, world.screen_height - 12, 0, "Ken no subarashii sabaku taikai - V1.0");
 
                 al_draw_scaled_bitmap(play_bt, 0, 0, 120, 40, (world.screen_width/2) - (button_width_play/2), 460, button_width_play, button_height_play, 0);
                 al_draw_scaled_bitmap(leave_bt, 0, 0, 120, 40, (world.screen_width/2) - (button_width_leave/2), 550, button_width_leave, button_height_leave, 0);
@@ -316,22 +367,24 @@ int main(){
 
             //GAME_OVER SCREEN
             if(running_screen ==  GAME_OVER){
-                al_clear_to_color(al_map_rgb(255, 255, 255));
-
-                al_draw_scaled_bitmap(bkg_menu, 0, 0, 1280, 720, 0, 0, world.screen_width, world.screen_height, 0);
-                
-                al_draw_text(font, al_map_rgb(255, 255, 255), world.screen_width - 320, world.screen_height - 12, 0, "Ken no subarashii sabaku taikai - V0.5");
+                al_clear_to_color(al_map_rgb(0, 0, 0));
 
                 al_draw_scaled_bitmap(leave_bt, 0, 0, 120, 40, (world.screen_width/2) - (button_width_leave/2), 500, button_width_leave, button_height_leave, 0);
 
-                al_draw_scaled_bitmap(main_title, 0, 0, 448, 256, (world.screen_width/2) - 250, (world.screen_width/2) - 550, 500, 286, 0);
+                al_draw_scaled_bitmap(game_over,0, 0, 512, 128, 0, (world.screen_height/2) - 160, world.screen_width, 320, 0);                
                 
             }
 
             //GAME SCREEN
             if(running_screen ==  GAME){
+                
 
-                player.sprite_off_y = 64;
+                if(player.direction == RIGHT){
+                    player.sprite_off_y = 64;
+                }
+                else{
+                    player.sprite_off_y = 0;
+                }
 
             
                 al_clear_to_color(al_map_rgb(57, 159, 251));
@@ -339,6 +392,7 @@ int main(){
                 //bkg
                 al_draw_scaled_bitmap(world.bkg, world.bkg_off_x, 0, ((world.bkg_img_og_height * world.screen_width)/world.screen_height), world.bkg_img_og_height, 0, 0, world.screen_width, world.screen_height, 0);
             
+                al_draw_textf(font, al_map_rgb(0, 55, 200), world.screen_width - 220, 15, 0, "ENEMIES REMANING: %1d/%1d ", horde.enemies_remaining, ENEMY_AMT);
 
                 //STAMINA BAR
                 al_draw_filled_rectangle(20, 50, (5 * MAX_STAMINA) + 20, 60, al_map_rgb(255, 0, 0));
@@ -380,17 +434,15 @@ int main(){
             }
 
             if(running_screen ==  GAME_BOSS_STATE){
-                if(player.direction == RIGHT){
-                    player.sprite_off_y = 64;
-                }
-                else{
-                    player.sprite_off_y = 0;
-                }
+                
+                player.sprite_off_y = 64;
+                player.sprite_off_x = 448;
+               
             
                 al_clear_to_color(al_map_rgb(57, 159, 251));
 
                 //bkg
-                al_draw_scaled_bitmap(world.bkg, world.bkg_off_x, 0, ((world.bkg_img_og_height * world.screen_width)/world.screen_height), world.bkg_img_og_height, 0, 0, world.screen_width, world.screen_height, 0);
+                al_draw_scaled_bitmap(bkg_boss, world.bkg_off_x, 0, ((world.bkg_img_og_height * world.screen_width)/world.screen_height), world.bkg_img_og_height, 0, 0, world.screen_width, world.screen_height, 0);
             
 
                 //STAMINA BAR
@@ -420,9 +472,30 @@ int main(){
                 al_draw_tinted_scaled_bitmap(player.sprite, al_map_rgb(player.rgb[0], player.rgb[1], player.rgb[2]), player.sprite_off_x, player.sprite_off_y, player.og_dimensions, player.og_dimensions, player.x, player.y, player.dimensions, player.dimensions, 0);
                 
                 if(boss.life > 0){
-                    al_draw_tinted_scaled_bitmap(boss.enemy_sprite, al_map_rgb(boss.rgb[0],boss.rgb[1],boss.rgb[2]), 0, 0, player.og_dimensions, player.og_dimensions, world.screen_width - 192, 0, 128, world.screen_height, 0);
+                    al_draw_tinted_scaled_bitmap(boss.enemy_sprite, al_map_rgb(boss.rgb[0],boss.rgb[1],boss.rgb[2]), 0, 0, 64, 256, world.screen_width - 192, boss.y, 128, 4*128, 0);
                 }
 
+                if(world.counter < 30){
+                    if(world.counter % 2){
+                        al_draw_scaled_bitmap(bosstxt,0, 0, 512, 128, 0, (world.screen_height/2) - 160, world.screen_width, 320, 0);
+                    }
+                    else{
+                        al_draw_tinted_scaled_bitmap(bosstxt, al_map_rgb(255, 0, 0),0, 0, 512, 128, 0, (world.screen_height/2) - 160, world.screen_width, 320, 0);
+                    }
+                }
+                if(world.counter > 30 && world.counter < 60){
+                    al_draw_scaled_bitmap(t3,0, 0, 512, 128, 0, (world.screen_height/2) - 160, world.screen_width, 320, 0);
+                }
+                if(world.counter > 60 && world.counter < 90){
+                    al_draw_scaled_bitmap(t2,0, 0, 512, 128, 0, (world.screen_height/2) - 160, world.screen_width, 320, 0);
+                }
+                if(world.counter > 90 && world.counter < 120){
+                    al_draw_scaled_bitmap(t1,0, 0, 512, 128, 0, (world.screen_height/2) - 160, world.screen_width, 320, 0);
+                }
+
+                if(world.counter > 120 && world.counter < 150){
+                    al_draw_scaled_bitmap(go,0, 0, 512, 128, 0, (world.screen_height/2) - 160, world.screen_width, 320, 0);
+                }
             }
             
             

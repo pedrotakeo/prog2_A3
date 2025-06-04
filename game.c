@@ -348,6 +348,7 @@ void player_to_enemy_damage(struct environment *world, struct player *player, st
                     horde->enemy[i].rgb[1] = 0;
                     horde->enemy[i].rgb[2] = 0;
                     if(!horde->enemy[i].life){
+                        horde->enemies_remaining--;
                         horde->enemy[i].state = DEAD;
                     }
 

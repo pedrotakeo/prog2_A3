@@ -50,6 +50,7 @@ struct horde{
 };
 
 struct boss{
+    float y;
     int life;
     int timer;
 

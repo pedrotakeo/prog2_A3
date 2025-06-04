@@ -91,11 +91,12 @@ void initialize_enemy_info(struct environment world, struct horde* horde){
 }
 
 void initialize_boss_info(struct boss *boss){
-    boss->life = 200 * MAX_LIFE;
+    boss->life = 10 * MAX_LIFE;
     boss->timer = 0;
     boss->rgb[0] = 255;
     boss->rgb[1] = 255;
     boss->rgb[2] = 255;
+    boss->y = 0;
 }
 
 
@@ -171,18 +172,9 @@ void round_1_enemy (struct environment world , struct enemy* enemy){
 
     }
 
-    //enemy->bullet.x += enemy->bullet.speed_x;
 
     if(enemy->universal_x == enemy->target_pos){    //IF IN POSITION DONE
-        /*if(enemy->direction == RIGHT){
-            enemy->bullet.speed_x = 20;
-        }
-        else{
-            enemy->bullet.speed_x = -20;
-        }
 
-        enemy->bullet.x = enemy->x + 15;
-        enemy->bullet.y = enemy->y + 40;*/
 
         enemy->round = 0;
         enemy->timer = 0;
@@ -190,47 +182,6 @@ void round_1_enemy (struct environment world , struct enemy* enemy){
     }
 
 }
-
-/*void round_2_enemy(struct environment world, struct player player, struct enemy* enemy){
-    if(enemy->round != 2){
-        return;
-    }
-
-    if(enemy->timer = 10000){
-        enemy->timer = 0;
-        enemy->round = 0;
-        return;
-    }
-
-    if(enemy->timer = 90){
-        enemy->bullet.shoot = false;
-    }
-
-    if(enemy->timer == 0){
-        if(enemy->x < player.x){
-            enemy->direction = RIGHT;
-        }
-        else{
-            enemy->direction = LEFT;
-        }
-    }
-
-    if(enemy->direction == RIGHT){
-        enemy->bullet.x += enemy->bullet.speed_x;
-    }
-    else{
-        enemy->bullet.x -= enemy->bullet.speed_x;
-    }
-
-    if(enemy->timer = 30){
-        enemy->bullet.shoot = true;
-        enemy->bullet.x = enemy->x + 15;
-        enemy->bullet.y = enemy->y + 40;
-    }
-
-
-    enemy->timer++;
-}*/
 
 void enemy_logic(struct environment world, struct player player, struct horde *horde){
     for(int i = 0; i < ENEMY_AMT; i++){
