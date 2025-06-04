@@ -56,7 +56,7 @@ struct boss_attack{
     int width;
     int appear;
     int speed;
-    int timer;
+    int attack_timer;
 };
 
 struct boss{
@@ -64,6 +64,8 @@ struct boss{
     int life;
     int timer;
     int direction;
+    int attack_timer;
+    int death_timer;
 
     ALLEGRO_BITMAP *enemy_sprite;
 

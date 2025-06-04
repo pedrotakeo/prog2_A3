@@ -64,6 +64,9 @@ int main(){
     must_init(game_over, "game_over"); 
     al_convert_mask_to_alpha(game_over, al_map_rgb(26, 255, 0));
 
+    ALLEGRO_BITMAP* win_bkg = al_load_bitmap("assets/win.png");
+    must_init(win_bkg, "win_bkg"); 
+
 
 
     //GAME SETTINGS=========================================================================
@@ -166,6 +169,7 @@ int main(){
         {
         
             case ALLEGRO_EVENT_TIMER:
+                //MENU ======================================================================================
                 if(running_screen == MENU){
                     al_get_keyboard_state(&ks);
                     al_get_mouse_state(&ms);
@@ -204,7 +208,7 @@ int main(){
 
                     redraw = true;
                 }
-
+                //YOU LOSE ======================================================================================
                 else if(running_screen == GAME_OVER){
                     al_get_keyboard_state(&ks);
                     al_get_mouse_state(&ms);
@@ -212,7 +216,8 @@ int main(){
                     button_width_leave = 200;
                     button_height_leave = 67;
 
-                    if((ms.x >= ((world.screen_width/2) - 100) && ms.x <= ((world.screen_width/2) + 100) && ms.y >= 500 && ms.y <= 567)){
+                    if((ms.x >= ((world.screen_width/2) - 100) && ms.x <= ((world.screen_width/2) + 100) && ms.y >= 500 && ms.y <= 567) || (al_key_down(&ks, ALLEGRO_KEY_ESCAPE)) && world.counter > 30){
+
                         if(!al_mouse_button_down(&ms, 1)){
                             button_width_leave = 220;
                             button_height_leave = 73;
@@ -225,7 +230,28 @@ int main(){
 
                     redraw = true;
                 }
+                //YOU WIN ======================================================================================
+                else if(running_screen == YOU_WIN){
+                    al_get_keyboard_state(&ks);
+                    al_get_mouse_state(&ms);
 
+                    button_width_leave = 200;
+                    button_height_leave = 67;
+
+                    if((ms.x >= ((world.screen_width/2) - 100) && ms.x <= ((world.screen_width/2) + 100) && ms.y >= 500 && ms.y <= 567) || (al_key_down(&ks, ALLEGRO_KEY_ESCAPE)) && world.counter > 30){
+                        if(!al_mouse_button_down(&ms, 1)){
+                            button_width_leave = 220;
+                            button_height_leave = 73;
+                        }
+                        else{
+                            done = true;
+                            break;
+                        }
+                    }
+
+                    redraw = true;
+                }
+                //GAME ======================================================================================
                 else if(running_screen == GAME){
                     al_get_keyboard_state(&ks);
                     al_get_mouse_state(&ms);
@@ -270,16 +296,16 @@ int main(){
                         player.x = 100;
                         player.y = world.screen_height/2;
                         world.counter = 0;
-                        boss.rgb[0] = 255;
-                        boss.rgb[1] = 255;
-                        boss.rgb[2] = 255;
+                        player.rgb[0] = 255;
+                        player.rgb[1] = 255;
+                        player.rgb[2] = 255;
 
                         boss.timer = 0;
                     }
             
                     redraw = true; // set to be redrawn
                 }
-
+                //BOSS ======================================================================================
                 else if(running_screen == GAME_BOSS_STATE){
                     al_get_keyboard_state(&ks);
                     al_get_mouse_state(&ms);
@@ -288,27 +314,24 @@ int main(){
                     boss.rgb[1] = 255;
                     boss.rgb[2] = 255;
 
-            
-                    if(boss.direction == DOWN){
-                        boss.timer++;
-                    }
-                    else{
-                        boss.timer--;
-                    }
-                                  
-                    if(boss.timer < 0){
-                        boss.direction = DOWN;
-                        boss.timer = 0;
-                    }
-                    if(boss.timer > 30){
-                        boss.direction = UP;
-                        boss.timer = 30;
-                    }
+                    if(world.counter > 120  && boss.life > 0){
 
+                        if(boss.direction == DOWN){
+                            boss.timer++;
+                        }
+                        else{
+                            boss.timer--;
+                        }
+                                      
+                        if(boss.timer < 0){
+                            boss.direction = DOWN;
+                            boss.timer = 0;
+                        }
+                        if(boss.timer > 30){
+                            boss.direction = UP;
+                            boss.timer = 30;
+                        }
 
-                    
-                    
-                    if(world.counter > 120){
                         boss_attack_logic(&boss, world);
 
                         reset_info(&world, &player, &ms);
@@ -328,9 +351,16 @@ int main(){
 
                         player_to_boss_damage(world, &boss, weapon);
                         boss_to_player_damage(&world, &player, &boss, &running_screen);
-                        if(boss.life == 0){
-                            running_screen = GAME_OVER;
+                        
+                    }
+
+                    if(boss.life == 0){
+                        boss.death_timer++;
+                        if(boss.death_timer > 45){
+                            running_screen = YOU_WIN;
+                            world.counter = 0;
                         }
+                        boss.timer = boss.timer + 2;
                     }
                     
             
@@ -372,6 +402,17 @@ int main(){
                 al_draw_scaled_bitmap(leave_bt, 0, 0, 120, 40, (world.screen_width/2) - (button_width_leave/2), 500, button_width_leave, button_height_leave, 0);
 
                 al_draw_scaled_bitmap(game_over,0, 0, 512, 128, 0, (world.screen_height/2) - 160, world.screen_width, 320, 0);                
+                
+            }
+
+            //WIN SCREEN
+            if(running_screen ==  YOU_WIN){
+                al_clear_to_color(al_map_rgb(0, 0, 0));
+
+                al_draw_scaled_bitmap(win_bkg, 0, 0, 1920, 1080, 0, 0, world.screen_width, world.screen_height, 0);
+
+                al_draw_scaled_bitmap(leave_bt, 0, 0, 120, 40, (world.screen_width/2) - (button_width_leave/2), 500, button_width_leave, button_height_leave, 0);
+
                 
             }
 
@@ -424,9 +465,6 @@ int main(){
                 for(int i = 0; i < ENEMY_AMT; i++){
                     if(horde.enemy[i].state == ALIVE){
                         al_draw_tinted_scaled_bitmap(horde.enemy_sprite, al_map_rgb(horde.enemy[i].rgb[0], horde.enemy[i].rgb[1], horde.enemy[i].rgb[2]), horde.enemy[i].sprite_off_x, horde.enemy[i].sprite_off_y, player.og_dimensions, player.og_dimensions, horde.enemy[i].x, horde.enemy[i].y, player.dimensions, player.dimensions, 0);
-                        //if(horde.enemy[i].bullet.shoot){
-                            //al_draw_scaled_bitmap(enemy_tama, 0, 0, 32, 32, horde.enemy[i].bullet.x, horde.enemy[i].bullet.y, 32, 32, 0);
-                        //}
                     }
                    
                 }
@@ -479,9 +517,8 @@ int main(){
                 }
                 
                 //BOSS
-                if(boss.life > 0){
-                    al_draw_tinted_scaled_bitmap(boss.enemy_sprite, al_map_rgb(boss.rgb[0],boss.rgb[1],boss.rgb[2]), 0, 0, 64, 256, world.screen_width - 192, (boss.timer * 7), 128, 4*128, 0);
-                }
+                al_draw_tinted_scaled_bitmap(boss.enemy_sprite, al_map_rgb(boss.rgb[0],boss.rgb[1],boss.rgb[2]), 0, 0, 64, 256, world.screen_width - 192, (boss.timer * 7), 128, 4*128, 0);
+                
 
                 if(world.counter < 30){
                     if(world.counter % 2){

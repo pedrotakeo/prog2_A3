@@ -385,6 +385,7 @@ void enemy_to_player_damage(struct environment *world, struct player *player, st
                 player->rgb[2] = 0;
                 if(!player->life){
                     *running_screen = 2;
+                    world->counter = 0;
                 }
 
             }
@@ -433,27 +434,27 @@ void boss_to_player_damage(struct environment *world, struct player *player, str
         player->rgb[2] = 0;
         if(!player->life){
             *running_screen = 2;
+            world->counter = 0;
         }
     }
 
-    /*for(int i = 0; i < ENEMY_AMT; i++){
-        bool touch1 = player->x + 64 >= horde->enemy[i].x && player->x + 64 <= horde->enemy[i].x + 64 && player->y + 64 >= horde->enemy[i].y && player->y + 64 <= horde->enemy[i].y + 64;
-        bool touch2 = player->x >= horde->enemy[i].x && player->x <= horde->enemy[i].x + 64 && player->y >= horde->enemy[i].y && player->y <= horde->enemy[i].y + 64;;
-
-        if(horde->enemy[i].state == ALIVE && horde->enemy[i].universal_x > world->screen_limit_L &&  horde->enemy[i].universal_x < world->screen_limit_R){ //if alive and within bounds
-            if (touch1 || touch2){
-                player->damage_cooldown = 12;
-                player->life--;
-                player->rgb[0] = 255;
-                player->rgb[1] = 0;
-                player->rgb[2] = 0;
-                if(!player->life){
-                    *running_screen = 2;
-                }
-
+    for(int i = 0; i < 4; i ++){
+        bool touch1 = player->x + 64 >= boss->attack[i].x && player->x + 64 <= boss->attack[i].x + boss->attack[i].width && player->y + 64 >= boss->attack[i].y && player->y + 64 <= boss->attack[i].y + boss->attack[i].height;
+        bool touch2 = player->x >= boss->attack[i].x && player->x <= boss->attack[i].x + boss->attack[i].width && player->y >= boss->attack[i].y && player->y <= boss->attack[i].y + boss->attack[i].height;
+        
+        if (touch1 || touch2){
+            player->damage_cooldown = 12;
+            player->life = player->life - 2;
+            player->rgb[0] = 255;
+            player->rgb[1] = 0;
+            player->rgb[2] = 0;
+            if(!player->life){
+                *running_screen = 2;
+                world->counter = 0;
             }
 
-
         }
-    }*/
+    
+    }
+
 }

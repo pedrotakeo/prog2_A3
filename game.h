@@ -28,6 +28,7 @@ struct boss;
 #define GAME 1
 #define GAME_OVER 2
 #define GAME_BOSS_STATE 3
+#define YOU_WIN 4
 
 
 struct environment{
