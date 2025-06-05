@@ -1,7 +1,0 @@
-    boss->attack[3].appear = 0;
-    boss->attack[3].speed = 10;
-    boss->attack[3].timer = 0;
-    boss->attack[3].x = world.screen_width - 128;
-    boss->attack[3].y = 0;
-    boss->attack[3].width = 50;
-    boss->attack[3].width = world.screen_height/2;
