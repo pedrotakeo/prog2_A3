@@ -13,8 +13,6 @@ void load_error_check(bool test){
     exit(1);
 }
 
-
-
 int main(){
     int running_screen = MENU;
 
