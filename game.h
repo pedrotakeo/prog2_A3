@@ -91,6 +91,14 @@ struct player{  //PLAYER CLASS
     void (*state)(struct environment*, struct player*);
 };
 
+struct heart_object{
+    float x;
+    float y;
+    int size;
+
+    int available;
+};
+
 void initialize_world_info(struct environment *world);
 
 void initialize_player_info(struct environment world, struct player *player);
@@ -100,6 +108,8 @@ void reset_info(struct environment *world, struct player *player, ALLEGRO_MOUSE_
 void pause_game(ALLEGRO_KEYBOARD_STATE *ks, int *running_screen);
 
 void determine_universal_screen_limits(struct environment *world);
+
+void initialize_heart_object(struct environment world, struct heart_object *heart);
 
 // COMBAT STUFF
 

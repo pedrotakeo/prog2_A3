@@ -86,6 +86,9 @@ int main(){
     load_error_check(player.heart);
     al_convert_mask_to_alpha(player.heart, al_map_rgb(26, 255, 0));
 
+    struct heart_object heart;
+    initialize_heart_object(world, &heart);
+
 
     //projectile BACKUP======================================================================================================
     struct weapon *backup;
@@ -456,6 +459,10 @@ int main(){
                 //player
                 al_draw_tinted_scaled_bitmap(player.sprite, al_map_rgb(player.rgb[0], player.rgb[1], player.rgb[2]), player.sprite_off_x, player.sprite_off_y, player.og_dimensions, player.og_dimensions, player.x, player.y, player.dimensions, player.dimensions, 0);
                 
+                if(heart.available){
+                    al_draw_scaled_bitmap(player.heart, 0, 0, 32, 32, heart.x - world.screen_limit_L, heart.y, heart.size, heart.size, 0);
+                }
+
                 //ENEMIES
                 for(int i = 0; i < ENEMY_AMT; i++){
                     if(horde.enemy[i].state == ALIVE){
@@ -507,7 +514,7 @@ int main(){
                 //BOSS_ATTACKS
                 for(int i = 0; i < 4; i++){
                     if(boss.attack[i].appear){
-                        al_draw_filled_rectangle(boss.attack[i].x, boss.attack[i].y, (boss.attack[i].x + boss.attack[i].width), (boss.attack[i].y + boss.attack[i].height), al_map_rgb(255, 255, 255));
+                        al_draw_filled_rectangle(boss.attack[i].x, boss.attack[i].y, (boss.attack[i].x + boss.attack[i].width), (boss.attack[i].y + boss.attack[i].height), al_map_rgb(255, 0, 100));
                     }
                 }
                 

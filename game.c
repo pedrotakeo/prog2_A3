@@ -45,6 +45,13 @@ void initialize_world_info(struct environment *world){
 
 }
 
+void initialize_heart_object(struct environment world, struct heart_object *heart){
+    heart->x = 3000;
+    heart->size = 70;
+    heart->y = world.screen_height - (175 + (64 - heart->size));
+    heart->available = 1;
+}
+
 void set_player_methods(struct player *player){
     player->move = move_player;
 
