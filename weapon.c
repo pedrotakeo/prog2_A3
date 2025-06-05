@@ -160,7 +160,7 @@ struct weapon *destroy_weapon(struct weapon *weapon){
         aux = destroy_bullet(weapon, weapon->first);
         free(aux);
     }
-
+    al_destroy_bitmap(weapon->projectile);
     free(weapon);
     return NULL;
 

@@ -8,11 +8,8 @@
 #include "weapon.h"
 #include "enemy.h"
 
-void must_init(bool test, const char *description)
-{
+void load_error_check(bool test){
     if(test) return;
-
-    printf("couldn't initialize %s\n", description);
     exit(1);
 }
 
@@ -21,23 +18,23 @@ void must_init(bool test, const char *description)
 int main(){
     int running_screen = MENU;
 
-    must_init(al_init(), "allegro");
-    must_init(al_install_keyboard(), "keyboard");
-    must_init(al_install_mouse(), "mouse");
+    load_error_check(al_init());
+    load_error_check(al_install_keyboard());
+    load_error_check(al_install_mouse());
 
     ALLEGRO_TIMER* timer = al_create_timer(1.0 / 30.0);
-    must_init(timer, "timer");
+    load_error_check(timer);
 
     ALLEGRO_EVENT_QUEUE* queue = al_create_event_queue();
-    must_init(queue, "queue");
+    load_error_check(queue);
 
     al_set_new_display_option(ALLEGRO_SAMPLE_BUFFERS, 1, ALLEGRO_SUGGEST);
     al_set_new_display_option(ALLEGRO_SAMPLES, 8, ALLEGRO_SUGGEST);
 
     ALLEGRO_FONT* font = al_create_builtin_font();
-    must_init(font, "font");
+    load_error_check(font);
 
-    must_init(al_init_image_addon(), "image addon");
+    load_error_check(al_init_image_addon());
 
     //MENU SETTINGS=========================================================================
     int button_width_play = 0;
@@ -46,26 +43,26 @@ int main(){
     int button_height_leave = 0;
 
     ALLEGRO_BITMAP* bkg_menu = al_load_bitmap("assets/bkg_blur.png");
-    must_init(bkg_menu, "blur"); 
+    load_error_check(bkg_menu); 
 
     ALLEGRO_BITMAP* play_bt = al_load_bitmap("assets/play.png");
-    must_init(play_bt, "play"); 
+    load_error_check(play_bt); 
     al_convert_mask_to_alpha(play_bt, al_map_rgb(78, 255, 0));
 
     ALLEGRO_BITMAP* leave_bt = al_load_bitmap("assets/leave.png");
-    must_init(leave_bt, "leave"); 
+    load_error_check(leave_bt); 
     al_convert_mask_to_alpha(leave_bt, al_map_rgb(78, 255, 0));
 
     ALLEGRO_BITMAP* main_title = al_load_bitmap("assets/main_title.png");
-    must_init(main_title, "maintitle"); 
+    load_error_check(main_title); 
     al_convert_mask_to_alpha(main_title, al_map_rgb(26, 255, 0));
 
     ALLEGRO_BITMAP* game_over = al_load_bitmap("assets/game_over.png");
-    must_init(game_over, "game_over"); 
+    load_error_check(game_over); 
     al_convert_mask_to_alpha(game_over, al_map_rgb(26, 255, 0));
 
     ALLEGRO_BITMAP* win_bkg = al_load_bitmap("assets/win.png");
-    must_init(win_bkg, "win_bkg"); 
+    load_error_check(win_bkg); 
 
 
 
@@ -73,10 +70,10 @@ int main(){
     struct environment world; 
     initialize_world_info(&world);
     world.bkg = al_load_bitmap("assets/bkg.png");
-    must_init(world.bkg, "bkg");
+    load_error_check(world.bkg);
 
     ALLEGRO_DISPLAY* disp = al_create_display(world.screen_width, world.screen_height);
-    must_init(disp, "display");
+    load_error_check(disp);
 
     float og_floor = world.floor;
 
@@ -85,19 +82,19 @@ int main(){
     set_player_methods(&player);
     initialize_player_info(world, &player);
     player.sprite = al_load_bitmap("assets/kyara.png");
-    must_init(player.sprite, "character");
+    load_error_check(player.sprite);
     al_convert_mask_to_alpha(player.sprite, al_map_rgb(26, 255, 0));
     player.heart = al_load_bitmap("assets/life.png");
-    must_init(player.heart, "heart");
+    load_error_check(player.heart);
     al_convert_mask_to_alpha(player.heart, al_map_rgb(26, 255, 0));
 
 
     //projectile BACKUP======================================================================================================
     struct weapon *backup;
     backup = create_weapon();
-    must_init(backup, "weapon");
+    load_error_check(backup);
     backup->projectile = al_load_bitmap("assets/projectile.png");
-    must_init(backup->projectile, "projectile");
+    load_error_check(backup->projectile);
     al_convert_mask_to_alpha(backup->projectile, al_map_rgb(26, 255, 0));
 
     for (int i = 0; i < 30; i++){
@@ -108,48 +105,48 @@ int main(){
     //projectile rules======================================================================================================
     struct weapon *weapon;
     weapon = create_weapon();
-    must_init(weapon, "weapon");
+    load_error_check(weapon);
     weapon->projectile = al_load_bitmap("assets/projectile.png");
-    must_init(weapon->projectile, "projectile");
+    load_error_check(weapon->projectile);
     al_convert_mask_to_alpha(weapon->projectile, al_map_rgb(26, 255, 0));
 
     //ENEMY RULES======================================================================================================
     struct horde horde;
     initialize_enemy_info(world, &horde);
     horde.enemy_sprite = al_load_bitmap("assets/enemy.png");
-    must_init(horde.enemy_sprite, "enemy");
+    load_error_check(horde.enemy_sprite);
     al_convert_mask_to_alpha(horde.enemy_sprite, al_map_rgb(26, 255, 0));
 
     struct boss boss;
     initialize_boss_info(&boss, world);
     boss.enemy_sprite = al_load_bitmap("assets/boss.png");
-    must_init(boss.enemy_sprite, "boss");
+    load_error_check(boss.enemy_sprite);
     al_convert_mask_to_alpha(boss.enemy_sprite, al_map_rgb(26, 255, 0));
 
     ALLEGRO_BITMAP* bkg_boss = al_load_bitmap("assets/bkg_boss.png");
-    must_init(bkg_boss, "bkg_boss"); 
+    load_error_check(bkg_boss); 
 
     ALLEGRO_BITMAP* bosstxt = al_load_bitmap("assets/bosstxt.png");
-    must_init(bosstxt, "bosstxt"); 
+    load_error_check(bosstxt); 
     al_convert_mask_to_alpha(bosstxt, al_map_rgb(26, 255, 0));
 
     ALLEGRO_BITMAP* t3 = al_load_bitmap("assets/t3.png");
-    must_init(t3, "t3"); 
+    load_error_check(t3); 
     al_convert_mask_to_alpha(t3, al_map_rgb(26, 255, 0));
 
     ALLEGRO_BITMAP* t2 = al_load_bitmap("assets/t2.png");
-    must_init(t2, "t2"); 
+    load_error_check(t2); 
     al_convert_mask_to_alpha(t2, al_map_rgb(26, 255, 0));
 
     ALLEGRO_BITMAP* t1 = al_load_bitmap("assets/t1.png");
-    must_init(t1, "t1"); 
+    load_error_check(t1); 
     al_convert_mask_to_alpha(t1, al_map_rgb(26, 255, 0));
 
     ALLEGRO_BITMAP* go = al_load_bitmap("assets/go.png");
-    must_init(go, "go"); 
+    load_error_check(go); 
     al_convert_mask_to_alpha(go, al_map_rgb(26, 255, 0));
 
-    must_init(al_init_primitives_addon(), "primitives");
+    load_error_check(al_init_primitives_addon());
     al_register_event_source(queue, al_get_keyboard_event_source());
     al_register_event_source(queue, al_get_display_event_source(disp));
     al_register_event_source(queue, al_get_timer_event_source(timer));
@@ -556,7 +553,22 @@ int main(){
     backup = destroy_weapon(backup);
     al_destroy_bitmap(world.bkg);
     al_destroy_bitmap(player.sprite);
-    al_destroy_font(font);
+    al_destroy_bitmap(horde.enemy_sprite);
+    al_destroy_bitmap(boss.enemy_sprite);
+
+    al_destroy_bitmap(player.heart);
+    al_destroy_bitmap(bkg_boss);
+    al_destroy_bitmap(bkg_menu);
+    al_destroy_bitmap(win_bkg);
+    al_destroy_bitmap(play_bt);
+    al_destroy_bitmap(leave_bt);
+    al_destroy_bitmap(main_title);
+    al_destroy_bitmap(game_over);
+    al_destroy_bitmap(bosstxt);
+    al_destroy_bitmap(t3);
+    al_destroy_bitmap(t2);
+    al_destroy_bitmap(t1);
+    al_destroy_bitmap(go);
     al_destroy_display(disp);
     al_destroy_timer(timer);
     al_destroy_event_queue(queue);
