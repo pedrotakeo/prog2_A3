@@ -17,13 +17,6 @@ void initialize_enemy_info(struct environment world, struct horde* horde){
         horde->enemy[i].state = ALIVE;
         horde->enemy[i].round = 0;
         horde->enemy[i].timer = 0;
-        //horde->enemy[i].bullet.order = 0;
-        //horde->enemy[i].bullet.shoot = false;
-        //horde->enemy[i].bullet.speed_x = 40;
-        //horde->enemy[i].bullet.speed_y = 0;
-        //horde->enemy[i].bullet.timer = 0;
-        //horde->enemy[i].bullet.x = 6000;
-        //horde->enemy[i].bullet.y = 800;
         horde->enemy[i].target_pos = 0;
         horde->enemy[i].player_pos = 0;
         horde->enemy[i].rgb[0] = 255;
@@ -104,33 +97,33 @@ void initialize_boss_info(struct boss *boss, struct environment world){
     //attack info:
     //FIRST ATTACK |--  |
     boss->attack[0].appear = 0;
-    boss->attack[0].speed = 20;
+    boss->attack[0].speed = 25;
     boss->attack[0].x = world.screen_width;
     boss->attack[0].y = 0;
-    boss->attack[0].width = 50;
+    boss->attack[0].width = 100;
     boss->attack[0].height = world.screen_height/2;
 
     //SECOND ATTACK |  --|
     boss->attack[1].appear = 0;
-    boss->attack[1].speed = 20;
+    boss->attack[1].speed = 25;
     boss->attack[1].x = world.screen_width;
     boss->attack[1].y = world.screen_height/2;
-    boss->attack[1].width = 50;
+    boss->attack[1].width = 100;
     boss->attack[1].height = world.screen_height/2;
 
     //THIRD ATTACK |-  -|
     boss->attack[2].appear = 0;
-    boss->attack[2].speed = 20;
+    boss->attack[2].speed = 25;
     boss->attack[2].x = world.screen_width;
     boss->attack[2].y = 0;
-    boss->attack[2].width = 50;
+    boss->attack[2].width = 100;
     boss->attack[2].height = world.screen_height/4;
 
     boss->attack[3].appear = 0;
-    boss->attack[3].speed = 20;
+    boss->attack[3].speed = 25;
     boss->attack[3].x = world.screen_width;
     boss->attack[3].y = 3 * (world.screen_height/4);
-    boss->attack[3].width = 50;
+    boss->attack[3].width = 100;
     boss->attack[3].height = world.screen_height/4;
 }
 
