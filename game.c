@@ -465,3 +465,12 @@ void boss_to_player_damage(struct environment *world, struct player *player, str
     }
 
 }
+
+void player_heart_collision(struct environment world, struct player *player, struct heart_object *heart){
+    if(heart->available && ((player->universal_x > heart->x && player->universal_x < heart->x + heart->size) || (player->universal_x + player->dimensions > heart->x && player->universal_x + player->dimensions < heart->x + heart->size)) && player->y == world.screen_height - 175){
+        if(player->life < MAX_LIFE){
+            player->life++;
+        }
+        heart->available = 0;
+    }
+}

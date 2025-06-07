@@ -121,6 +121,7 @@ void player_to_boss_damage(struct environment world, struct boss *boss, struct w
 
 void boss_to_player_damage(struct environment *world, struct player *player, struct boss *boss, int *running_screen);
 
+void player_heart_collision(struct environment world, struct player *player, struct heart_object *heart);
 
 
 //PLAYER STUFF
