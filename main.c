@@ -101,6 +101,9 @@ int main(){
     horde.enemy_sprite = al_load_bitmap("assets/enemy.png");
     al_convert_mask_to_alpha(horde.enemy_sprite, al_map_rgb(26, 255, 0));
 
+    horde.proj_sprite = al_load_bitmap("assets/proj_enemy.png");
+    al_convert_mask_to_alpha(horde.proj_sprite, al_map_rgb(26, 255, 0));
+
     struct boss boss;
     initialize_boss_info(&boss, world);
 
@@ -445,6 +448,7 @@ int main(){
                 for(int i = 0; i < ENEMY_AMT; i++){
                     if(horde.enemy[i].state == ALIVE){
                         al_draw_tinted_scaled_bitmap(horde.enemy_sprite, al_map_rgb(horde.enemy[i].rgb[0], horde.enemy[i].rgb[1], horde.enemy[i].rgb[2]), horde.enemy[i].sprite_off_x, horde.enemy[i].sprite_off_y, player.og_dimensions, player.og_dimensions, horde.enemy[i].x, horde.enemy[i].y, player.dimensions, player.dimensions, 0);
+                        al_draw_scaled_bitmap(horde.proj_sprite, 0, 0, 32, 32, horde.enemy[i].bullet.x, horde.enemy[i].bullet.y, 25, 25, 0);
                     }
                    
                 }

@@ -15,7 +15,12 @@ struct environment;
 #define ALIVE 1
 #define LIFE 10
 
-struct projectile;
+struct enemy_bullet{
+    float x;
+    float y;
+    int speed;
+    int aim;
+};
 
 struct enemy{
     float x;
@@ -38,7 +43,8 @@ struct enemy{
     float parameter_left;
     float parameter_right;
 
-    struct projectile bullet;
+    struct enemy_bullet bullet;
+
 };
 
 struct horde{
@@ -47,6 +53,7 @@ struct horde{
 
     struct enemy enemy[ENEMY_AMT];
     ALLEGRO_BITMAP *enemy_sprite;
+    ALLEGRO_BITMAP *proj_sprite;
 };
 
 struct boss_attack{

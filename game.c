@@ -218,6 +218,7 @@ void reset_info(struct environment *world, struct player *player, ALLEGRO_MOUSE_
     player->rgb[0] = 255;
     player->rgb[1] = 255;
     player->rgb[2] = 255;
+    player->collision_height = player->y;
     determine_universal_screen_limits(world);
     determine_universal_player_pos(*world, player);
 
@@ -267,7 +268,7 @@ void adjust_player_aim(struct player *player, ALLEGRO_KEYBOARD_STATE *ks){
 void duck_player(struct player *player, ALLEGRO_KEYBOARD_STATE *ks){
     if(al_key_down(ks, ALLEGRO_KEY_S)){
         player->sprite_off_x = 320;
-        player->collision_height = player->collision_height/2;
+        player->collision_height += player->collision_height/2;
 
     }
 }
@@ -382,9 +383,10 @@ void enemy_to_player_damage(struct environment *world, struct player *player, st
     for(int i = 0; i < ENEMY_AMT; i++){
         bool touch1 = player->x + 64 >= horde->enemy[i].x && player->x + 64 <= horde->enemy[i].x + 64 && player->y + 64 >= horde->enemy[i].y && player->y + 64 <= horde->enemy[i].y + 64;
         bool touch2 = player->x >= horde->enemy[i].x && player->x <= horde->enemy[i].x + 64 && player->y >= horde->enemy[i].y && player->y <= horde->enemy[i].y + 64;;
+        bool touch3 = horde->enemy[i].bullet.x > player->x && horde->enemy[i].bullet.x < player->x + player->dimensions && horde->enemy[i].bullet.y + 13 > player->collision_height && horde->enemy[i].bullet.y + 13 < player->y + player->dimensions;
 
         if(horde->enemy[i].state == ALIVE && horde->enemy[i].universal_x > world->screen_limit_L &&  horde->enemy[i].universal_x < world->screen_limit_R){ //if alive and within bounds
-            if (touch1 || touch2){
+            if (touch1 || touch2 || touch3){
                 player->damage_cooldown = 12;
                 player->life--;
                 player->rgb[0] = 255;
@@ -448,7 +450,7 @@ void boss_to_player_damage(struct environment *world, struct player *player, str
     for(int i = 0; i < 4; i ++){
         bool touch1 = player->x + 64 >= boss->attack[i].x && player->x + 64 <= boss->attack[i].x + boss->attack[i].width && player->y + 64 >= boss->attack[i].y && player->y + 64 <= boss->attack[i].y + boss->attack[i].height;
         bool touch2 = player->x >= boss->attack[i].x && player->x <= boss->attack[i].x + boss->attack[i].width && player->y >= boss->attack[i].y && player->y <= boss->attack[i].y + boss->attack[i].height;
-        
+
         if (touch1 || touch2){
             player->damage_cooldown = 12;
             player->life = player->life - 2;
