@@ -118,7 +118,7 @@ void initialize_boss_info(struct boss *boss, struct environment world){
     //attack info:
     //FIRST ATTACK |--  |
     boss->attack[0].appear = 0;
-    boss->attack[0].speed = 25;
+    boss->attack[0].speed = 35;
     boss->attack[0].x = world.screen_width;
     boss->attack[0].y = 0;
     boss->attack[0].width = 100;
@@ -126,7 +126,7 @@ void initialize_boss_info(struct boss *boss, struct environment world){
 
     //SECOND ATTACK |  --|
     boss->attack[1].appear = 0;
-    boss->attack[1].speed = 25;
+    boss->attack[1].speed = 35;
     boss->attack[1].x = world.screen_width;
     boss->attack[1].y = world.screen_height/2;
     boss->attack[1].width = 100;
@@ -134,14 +134,14 @@ void initialize_boss_info(struct boss *boss, struct environment world){
 
     //THIRD ATTACK |-  -|
     boss->attack[2].appear = 0;
-    boss->attack[2].speed = 25;
+    boss->attack[2].speed = 35;
     boss->attack[2].x = world.screen_width;
     boss->attack[2].y = 0;
     boss->attack[2].width = 100;
     boss->attack[2].height = world.screen_height/4;
 
     boss->attack[3].appear = 0;
-    boss->attack[3].speed = 25;
+    boss->attack[3].speed = 35;
     boss->attack[3].x = world.screen_width;
     boss->attack[3].y = 3 * (world.screen_height/4);
     boss->attack[3].width = 100;
