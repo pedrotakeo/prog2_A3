@@ -8,6 +8,9 @@
 #include "weapon.h"
 
 
+// BULLET LIST IMPLEMENTATION
+
+
 struct weapon* create_weapon(){
     struct weapon *new;
     if(!(new = malloc (sizeof(struct weapon)))){

@@ -8,6 +8,8 @@
 #include "game.h"
 #include "weapon.h"
 
+// INITIALIZE FUNCTIONS ====================================================================================================================
+
 void initialize_enemy_info(struct environment world, struct horde* horde){
     horde->enemies_remaining = ENEMY_AMT;
     horde->speed = 10;
@@ -145,6 +147,8 @@ void initialize_boss_info(struct boss *boss, struct environment world){
     boss->attack[3].width = 100;
     boss->attack[3].height = world.screen_height/4;
 }
+
+//ENEMY "AI" ====================================================================================================================
 
 void boss_attack_logic(struct boss *boss, struct environment world){
     boss->attack_timer++;

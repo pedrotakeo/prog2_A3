@@ -76,7 +76,7 @@ struct player{  //PLAYER CLASS
     ALLEGRO_BITMAP *sprite;
     ALLEGRO_BITMAP *heart;
 
-    void (*move)(struct environment*, struct player*, ALLEGRO_KEYBOARD_STATE*, ALLEGRO_MOUSE_STATE*, int);
+    void (*move)(struct environment*, struct player*, ALLEGRO_KEYBOARD_STATE*, ALLEGRO_MOUSE_STATE*, int, struct horde*);
 
     void (*jump)(struct environment*, struct player*, ALLEGRO_KEYBOARD_STATE*, float*);
 
@@ -131,7 +131,7 @@ void determine_universal_screen_limits(struct environment *world);
 
 void determine_universal_player_pos(struct environment world, struct player *player);
 
-void move_player(struct environment *world, struct player *player, ALLEGRO_KEYBOARD_STATE *ks, ALLEGRO_MOUSE_STATE *ms, int game_state);
+void move_player(struct environment *world, struct player *player, ALLEGRO_KEYBOARD_STATE *ks, ALLEGRO_MOUSE_STATE *ms, int game_state, struct horde *horde);
 
 void jump_player(struct environment *world, struct player *player, ALLEGRO_KEYBOARD_STATE *ks, float *og_floor);
 

@@ -145,10 +145,9 @@ int main(){
 
         switch(event.type)
         {
-        
             case ALLEGRO_EVENT_TIMER:
                 //MENU ======================================================================================
-                if(running_screen == MENU){
+                if(running_screen == MENU){  // main menu and puse screen
                     al_get_keyboard_state(&ks);
                     al_get_mouse_state(&ms);
 
@@ -158,7 +157,7 @@ int main(){
                     button_height_leave = 67;
 
                     if((ms.x >= ((world.screen_width/2) - 100) && ms.x <= ((world.screen_width/2) + 100) && ms.y >= 460 && ms.y <= 527)){
-                        if(!al_mouse_button_down(&ms, 1)){
+                        if(!al_mouse_button_down(&ms, 1)){ //not pressed
                             button_width_play = 220;
                             button_height_play = 73;
                         }
@@ -169,7 +168,7 @@ int main(){
                     }
 
                     if((ms.x >= ((world.screen_width/2) - 100) && ms.x <= ((world.screen_width/2) + 100) && ms.y >= 550 && ms.y <= 617)){
-                        if(!al_mouse_button_down(&ms, 1)){
+                        if(!al_mouse_button_down(&ms, 1)){  //not pressed
                             button_width_leave = 220;
                             button_height_leave = 73;
                         }
@@ -187,7 +186,7 @@ int main(){
                     redraw = true;
                 }
                 //YOU LOSE ======================================================================================
-                else if(running_screen == GAME_OVER){
+                else if(running_screen == GAME_OVER){  // bad ending (LOSS)
                     al_get_keyboard_state(&ks);
                     al_get_mouse_state(&ms);
 
@@ -196,7 +195,7 @@ int main(){
 
                     if((ms.x >= ((world.screen_width/2) - 100) && ms.x <= ((world.screen_width/2) + 100) && ms.y >= 500 && ms.y <= 567) || (al_key_down(&ks, ALLEGRO_KEY_ESCAPE)) && world.counter > 30){
 
-                        if(!al_mouse_button_down(&ms, 1)){
+                        if(!al_mouse_button_down(&ms, 1)){  //not pressed
                             button_width_leave = 220;
                             button_height_leave = 73;
                         }
@@ -209,7 +208,7 @@ int main(){
                     redraw = true;
                 }
                 //YOU WIN ======================================================================================
-                else if(running_screen == YOU_WIN){
+                else if(running_screen == YOU_WIN){  // good ending (WIN)
                     al_get_keyboard_state(&ks);
                     al_get_mouse_state(&ms);
 
@@ -217,7 +216,7 @@ int main(){
                     button_height_leave = 67;
 
                     if((ms.x >= ((world.screen_width/2) - 100) && ms.x <= ((world.screen_width/2) + 100) && ms.y >= 500 && ms.y <= 567) || (al_key_down(&ks, ALLEGRO_KEY_ESCAPE)) && world.counter > 30){
-                        if(!al_mouse_button_down(&ms, 1)){
+                        if(!al_mouse_button_down(&ms, 1)){ //not pressed
                             button_width_leave = 220;
                             button_height_leave = 73;
                         }
@@ -230,9 +229,13 @@ int main(){
                     redraw = true;
                 }
                 //GAME ======================================================================================
-                else if(running_screen == GAME){
+                else if(running_screen == GAME){  // main stage
                     al_get_keyboard_state(&ks);
                     al_get_mouse_state(&ms);
+                    
+                    for(int i = 0; i < ENEMY_AMT; i ++){
+                        horde.enemy[i].bullet.speed = 25;
+                    }
 
                     // RESETA ALTERAÇOES TEMPORARIAS
                     reset_info(&world, &player, &ms);
@@ -241,7 +244,7 @@ int main(){
                     pause_game(&ks, &running_screen);
 
                     //PLAYER MOVES LEFT====================================================================================
-                    player.move(&world, &player, &ks, &ms, running_screen);
+                    player.move(&world, &player, &ks, &ms, running_screen, &horde);
 
                     //AIM ADJUSTMENT====================================================================================
                     player.aim_adjust(&player, &ks);
@@ -269,7 +272,7 @@ int main(){
                     enemy_to_player_damage(&world, &player, &horde, &running_screen);
                     player_heart_collision(world, &player, &heart);
 
-                    if(horde.enemies_remaining == 0 || al_key_down(&ks, ALLEGRO_KEY_B)){
+                    if(horde.enemies_remaining == 0 || al_key_down(&ks, ALLEGRO_KEY_B)){  // resets info and goes to next stage when all enemies are dead
                         player.aim = RIGHT;
                         running_screen = GAME_BOSS_STATE;
                         player.x = 100;
@@ -285,7 +288,7 @@ int main(){
                     redraw = true; // set to be redrawn
                 }
                 //BOSS ======================================================================================
-                else if(running_screen == GAME_BOSS_STATE){
+                else if(running_screen == GAME_BOSS_STATE){  // BOSS phase
                     al_get_keyboard_state(&ks);
                     al_get_mouse_state(&ms);
                     // RESETA ALTERAÇOES TEMPORARIAS
@@ -295,7 +298,7 @@ int main(){
 
                     if(world.counter > 120  && boss.life > 0){
 
-                        if(boss.direction == DOWN){
+                        if(boss.direction == DOWN){   // BOSS ANIMATION
                             boss.timer++;
                         }
                         else{
@@ -319,7 +322,7 @@ int main(){
                         pause_game(&ks, &running_screen);
 
                         //PLAYER MOVES LEFT====================================================================================
-                        player.move(&world, &player, &ks, &ms, running_screen);
+                        player.move(&world, &player, &ks, &ms, running_screen, NULL);
 
     
                         //SHOOTER LOGIC====================================================================================
@@ -333,7 +336,7 @@ int main(){
                         
                     }
 
-                    if(boss.life == 0){
+                    if(boss.life == 0){  // BOSS DEATH ANIMATION
                         boss.death_timer++;
                         if(boss.death_timer > 45){
                             running_screen = YOU_WIN;
@@ -360,7 +363,7 @@ int main(){
         if(redraw && al_is_event_queue_empty(queue))  // DESENHA A FRAME
         {
             //MENU SCREEN
-            if(running_screen ==  MENU){
+            if(running_screen ==  MENU){  // PRINT MENU INFO
                 al_clear_to_color(al_map_rgb(255, 255, 255));
 
                 al_draw_scaled_bitmap(bkg_menu, 0, 0, 1280, 720, 0, 0, world.screen_width, world.screen_height, 0);
@@ -375,7 +378,7 @@ int main(){
             }
 
             //GAME_OVER SCREEN
-            if(running_screen ==  GAME_OVER){
+            if(running_screen ==  GAME_OVER){ // PRINT DEATH INFO
                 al_clear_to_color(al_map_rgb(0, 0, 0));
 
                 al_draw_scaled_bitmap(leave_bt, 0, 0, 120, 40, (world.screen_width/2) - (button_width_leave/2), 500, button_width_leave, button_height_leave, 0);
@@ -385,7 +388,7 @@ int main(){
             }
 
             //WIN SCREEN
-            if(running_screen ==  YOU_WIN){
+            if(running_screen ==  YOU_WIN){  // PRINT WIN INFO
                 al_clear_to_color(al_map_rgb(0, 0, 0));
 
                 al_draw_scaled_bitmap(win_bkg, 0, 0, 1920, 1080, 0, 0, world.screen_width, world.screen_height, 0);
@@ -396,14 +399,14 @@ int main(){
             }
 
             //GAME SCREEN
-            if(running_screen ==  GAME){
+            if(running_screen ==  GAME){  // PRINT MAIN GAME INFO
                 
 
                 if(player.direction == RIGHT){
                     player.sprite_off_y = 64;
                 }
                 else{
-                    player.sprite_off_y = 0;
+                    player.sprite_off_y = 0;    // GUARANTEES CORRECT PLAYER SPRITE
                 }
 
             
@@ -440,7 +443,7 @@ int main(){
                 //player
                 al_draw_tinted_scaled_bitmap(player.sprite, al_map_rgb(player.rgb[0], player.rgb[1], player.rgb[2]), player.sprite_off_x, player.sprite_off_y, player.og_dimensions, player.og_dimensions, player.x, player.y, player.dimensions, player.dimensions, 0);
                 
-                if(heart.available){
+                if(heart.available){  // heart object
                     al_draw_scaled_bitmap(player.heart, 0, 0, 32, 32, heart.x - world.screen_limit_L, heart.y, heart.size, heart.size, 0);
                 }
 
@@ -455,10 +458,10 @@ int main(){
 
             }
 
-            if(running_screen ==  GAME_BOSS_STATE){
+            if(running_screen ==  GAME_BOSS_STATE){  // PRINT BOSS GAME INFO
                 
                 player.sprite_off_y = 64;
-                player.sprite_off_x = 448;
+                player.sprite_off_x = 448;  // GUARANTEES CORRECT PLAYER SPRITE
                
                 
                 al_clear_to_color(al_map_rgb(57, 159, 251));
@@ -504,7 +507,7 @@ int main(){
                 al_draw_tinted_scaled_bitmap(boss.enemy_sprite, al_map_rgb(boss.rgb[0],boss.rgb[1],boss.rgb[2]), 0, 0, 64, 256, world.screen_width - 192, (boss.timer * 7), 128, 4*128, 0);
                 
 
-                if(world.counter < 30){
+                if(world.counter < 30){   // COUNTDOWN ANIMATION
                     if(world.counter % 2){
                         al_draw_scaled_bitmap(bosstxt,0, 0, 512, 128, 0, (world.screen_height/2) - 160, world.screen_width, 320, 0);
                     }
@@ -529,11 +532,11 @@ int main(){
             
             
 
-            al_flip_display();
+            al_flip_display();  // SEND INFO TO SCREEN
             redraw = false;
         }
         
-        world.counter++;
+        world.counter++; //UPDATE UNIVERSAL TIMER
 
     }
     weapon = destroy_weapon(weapon);
@@ -542,7 +545,6 @@ int main(){
     al_destroy_bitmap(player.sprite);
     al_destroy_bitmap(horde.enemy_sprite);
     al_destroy_bitmap(boss.enemy_sprite);
-
     al_destroy_bitmap(player.heart);
     al_destroy_bitmap(bkg_boss);
     al_destroy_bitmap(bkg_menu);

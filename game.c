@@ -8,6 +8,8 @@
 #include "weapon.h"
 #include "enemy.h"
 
+// INITIALIZE FUNCTIONS====================================================================================================================
+
 void initialize_player_info(struct environment world, struct player *player){
     player->x = 200;
     player->y = world.floor;
@@ -69,7 +71,9 @@ void set_player_methods(struct player *player){
 
 }
 
-void move_player(struct environment *world, struct player *player, ALLEGRO_KEYBOARD_STATE *ks, ALLEGRO_MOUSE_STATE *ms, int game_state){
+// PLAYER INPUT FUNCTIONS====================================================================================================================
+
+void move_player(struct environment *world, struct player *player, ALLEGRO_KEYBOARD_STATE *ks, ALLEGRO_MOUSE_STATE *ms, int game_state, struct horde *horde){
 
 
     if(game_state ==  GAME){
@@ -79,6 +83,16 @@ void move_player(struct environment *world, struct player *player, ALLEGRO_KEYBO
     
             if(player->x <= world->screen_width/2 && player->universal_x >= (world->screen_width/2)+(player->dimensions/2)){
                 world->bkg_off_x -= 10;
+                if(horde){
+                    for(int i = 0; i < ENEMY_AMT; i ++){
+                        if(horde->enemy[i].bullet.aim == LEFT){
+                            horde->enemy[i].bullet.speed -= 10;
+                        }
+                        else{
+                            horde->enemy[i].bullet.speed += 10;
+                        }
+                    }
+                }
             }
             else if(player->universal_x >= 100){
 
@@ -105,6 +119,16 @@ void move_player(struct environment *world, struct player *player, ALLEGRO_KEYBO
 
             if(player->x >= world->screen_width/2 && player->universal_x <= 5760 - (world->screen_width/2) - (player->dimensions/2)){
                 world->bkg_off_x += 10;
+                if(horde){
+                    for(int i = 0; i < ENEMY_AMT; i ++){
+                        if(horde->enemy[i].bullet.aim == RIGHT){
+                            horde->enemy[i].bullet.speed -= 10;
+                        }
+                        else{
+                            horde->enemy[i].bullet.speed += 10;
+                        }
+                    }
+                }
             }
             else if(player->universal_x <= 5660){
                 player->x += player->speed;
@@ -199,6 +223,68 @@ void jump_player(struct environment *world, struct player *player, ALLEGRO_KEYBO
     }
 }
 
+void duck_player(struct player *player, ALLEGRO_KEYBOARD_STATE *ks){
+    if(al_key_down(ks, ALLEGRO_KEY_S)){
+        player->sprite_off_x = 320;
+        player->collision_height += player->collision_height/2;
+
+    }
+}
+
+void player_shoot(struct environment *world, struct player *player, struct weapon *weapon, struct weapon *backup, ALLEGRO_KEYBOARD_STATE *ks, ALLEGRO_MOUSE_STATE *ms){
+    struct bullet* aux = weapon->first;
+    struct bullet* temp;
+
+    if(weapon->cool_down > 0){
+        weapon->cool_down++;
+    }
+
+    if(weapon->cool_down >= 4){
+        weapon->cool_down = 0;
+    }
+
+
+    while(aux){
+        temp = aux->next;
+        aux->info.x += aux->info.speed_x;
+        aux->info.y += aux->info.speed_y;
+        aux->info.timer++;
+        if(aux->info.timer >= 30){// se está dentro da tela
+            aux = destroy_bullet(weapon, aux);
+            free(aux);
+        }
+
+        aux = temp;
+    }
+
+    if(player->stamina <= 0){
+        if(player->stamina < 0){
+            player->stamina_recount = 0;
+        }
+        player->stamina_recount = player->stamina_recount + 2;
+        if(player->stamina_recount >= MAX_STAMINA){
+            player->stamina_recount = MAX_STAMINA;
+            player->stamina = MAX_STAMINA;
+        }
+    }
+
+    if(al_mouse_button_down(ms, 1) && weapon->cool_down == 0 && player->stamina > 0 && world->counter > 5){
+        player->stamina--;
+        player->stamina_recount--;
+        if(backup->first){
+            weapon->cool_down++;
+            struct bullet* temp = destroy_bullet(backup, backup->first); // pega bala alocada da lista backup
+            load_weapon(weapon, temp, (*player));  //carrega na arma principal
+
+            struct bullet* aux = create_projectile(backup, (*player)); 
+            load_weapon(backup, aux, (*player));  // faz refill na backup
+        }
+
+    }
+}
+
+// PLAYER POSITION AND STATE FUNCTIONS====================================================================================================================
+
 void determine_universal_screen_limits(struct environment *world){
     int total_width_scaled = (world->screen_height * 2048)/256;
 
@@ -265,65 +351,7 @@ void adjust_player_aim(struct player *player, ALLEGRO_KEYBOARD_STATE *ks){
     }
 }
 
-void duck_player(struct player *player, ALLEGRO_KEYBOARD_STATE *ks){
-    if(al_key_down(ks, ALLEGRO_KEY_S)){
-        player->sprite_off_x = 320;
-        player->collision_height += player->collision_height/2;
 
-    }
-}
-
-void player_shoot(struct environment *world, struct player *player, struct weapon *weapon, struct weapon *backup, ALLEGRO_KEYBOARD_STATE *ks, ALLEGRO_MOUSE_STATE *ms){
-    struct bullet* aux = weapon->first;
-    struct bullet* temp;
-
-    if(weapon->cool_down > 0){
-        weapon->cool_down++;
-    }
-
-    if(weapon->cool_down >= 4){
-        weapon->cool_down = 0;
-    }
-
-
-    while(aux){
-        temp = aux->next;
-        aux->info.x += aux->info.speed_x;
-        aux->info.y += aux->info.speed_y;
-        aux->info.timer++;
-        if(aux->info.timer >= 30){// se está dentro da tela
-            aux = destroy_bullet(weapon, aux);
-            free(aux);
-        }
-
-        aux = temp;
-    }
-
-    if(player->stamina <= 0){
-        if(player->stamina < 0){
-            player->stamina_recount = 0;
-        }
-        player->stamina_recount = player->stamina_recount + 2;
-        if(player->stamina_recount >= MAX_STAMINA){
-            player->stamina_recount = MAX_STAMINA;
-            player->stamina = MAX_STAMINA;
-        }
-    }
-
-    if(al_mouse_button_down(ms, 1) && weapon->cool_down == 0 && player->stamina > 0 && world->counter > 5){
-        player->stamina--;
-        player->stamina_recount--;
-        if(backup->first){
-            weapon->cool_down++;
-            struct bullet* temp = destroy_bullet(backup, backup->first); // pega bala alocada da lista backup
-            load_weapon(weapon, temp, (*player));  //carrega na arma principal
-
-            struct bullet* aux = create_projectile(backup, (*player)); 
-            load_weapon(backup, aux, (*player));  // faz refill na backup
-        }
-
-    }
-}
 
 void player_state_dependent_operations(struct environment *world, struct player *player){
     bool in_platform_range = (player->universal_x <= 2700 && player->universal_x >= 2100 || player->universal_x <= 2000 && player->universal_x >= 1350 || player->universal_x <= 4450 && player->universal_x >= 3850);
@@ -340,6 +368,8 @@ void player_state_dependent_operations(struct environment *world, struct player 
         world->floor = world->screen_height - 175;
     }
 }
+
+// COLLISION FUNCTIONS ====================================================================================================================
 
 void player_to_enemy_damage(struct environment *world, struct player *player, struct weapon *weapon, struct horde *horde){
     struct bullet* aux = weapon->first;
